@@ -10,7 +10,7 @@ $projectName = $buildFor.split('/')[-1]
 . "C:\OpenStack\hyperv-compute-ci\HyperV\scripts\utils.ps1"
 
 $hasProject = Test-Path $buildDir\$projectName
-$hasNova = Test-Path $buildDir\compute-hyperv
+$hasNova = Test-Path $buildDir\nova
 $hasNeutron = Test-Path $buildDir\neutron
 $hasNeutronTemplate = Test-Path $neutronTemplate
 $hasNovaTemplate = Test-Path $novaTemplate
@@ -31,14 +31,14 @@ find-links =
 $ErrorActionPreference = "SilentlyContinue"
 
 # Do a selective teardown
-Write-Host "Ensuring hyperv-compute and neutron services are stopped."
-Stop-Service -Name hyperv-compute -Force
+Write-Host "Ensuring nova-compute and neutron services are stopped."
+Stop-Service -Name nova-compute -Force
 Stop-Service -Name neutron-hyperv-agent -Force
 
 Write-Host "Stopping any possible python processes left."
 Stop-Process -Name python -Force
 
-if (Get-Process -Name hyperv-compute){
+if (Get-Process -Name nova-compute){
     Throw "Hyperv-Compute is still running on this host"
 }
 
@@ -57,12 +57,12 @@ if (-not (Get-Service neutron-hyperv-agent -ErrorAction SilentlyContinue))
     Throw "Neutron Hyper-V Agent Service not registered"
 }
 
-if (-not (get-service nova -ErrorAction SilentlyContinue))
+if (-not (get-service nova-compute -ErrorAction SilentlyContinue))
 {
     Throw "Nova Service not registered"
 }
 
-if ($(Get-Service nova).Status -ne "Stopped"){
+if ($(Get-Service nova-compute).Status -ne "Stopped"){
     Throw "Nova service is still running"
 }
 
@@ -124,7 +124,7 @@ if ($buildFor -eq "stackforge/compute-hyperv"){
         GitClonePull "$buildDir\nova" "https://github.com/openstack/nova.git" $branchName
     }
     ExecRetry {
-        GitClonePull "$buildDir\networking-hyperv" "https://github.com/stackforge/networking-hyperv.git" "master"
+        GitClonePull "$buildDir\networking-hyperv" "https://github.com/stackforge/networking-hyperv.git" $branchName
     }
 }else{
     Throw "Cannot build for project: $buildFor"
@@ -235,10 +235,10 @@ if (($branchName.ToLower().CompareTo($('stable/juno').ToLower()) -eq 0) -or ($br
     $rabbitUser = "guest"
 }
 
-$NovaConfig = (gc "$templateDir\nova.conf").replace('[DEVSTACK_IP]', "$devstackIP").Replace('[LOGDIR]', "$openstackLogs").Replace('[RABBITUSER]', $rabbitUser)
+$novaConfig = (gc "$templateDir\nova.conf").replace('[DEVSTACK_IP]', "$devstackIP").Replace('[LOGDIR]', "$openstackLogs").Replace('[RABBITUSER]', $rabbitUser)
 $neutronConfig = (gc "$templateDir\neutron_hyperv_agent.conf").replace('[DEVSTACK_IP]', "$devstackIP").Replace('[LOGDIR]', "$openstackLogs").Replace('[RABBITUSER]', $rabbitUser)
 
-Set-Content C:\OpenStack\etc\nova.conf $ComputehvConfig
+Set-Content C:\OpenStack\etc\nova.conf $novaConfig
 if ($? -eq $false){
     Throw "Error writting $templateDir\nova.conf"
 }
