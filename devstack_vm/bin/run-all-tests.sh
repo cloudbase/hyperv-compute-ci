@@ -1,6 +1,6 @@
 #!/bin/bash
 
-project=${1:-"openstack/nova"}
+project=${1:-"openstack/hyperv-compute"}
 tests_dir=${2:-"/opt/stack/tempest"}
 parallel_tests=${3:-8}
 max_attempts=${4:-3}
