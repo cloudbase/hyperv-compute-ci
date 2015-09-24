@@ -1,2 +1,2 @@
 # hyperv-compute-ci
-CI for compute-hyperv project
+Hyper-V Compute CI
