@@ -9,7 +9,7 @@ $projectName = $buildFor.split('/')[-1]
 . "C:\OpenStack\hyperv-compute-ci\HyperV\scripts\config.ps1"
 . "C:\OpenStack\hyperv-compute-ci\HyperV\scripts\utils.ps1"
 
-$hasProject = Test-Path $buildDir\$projectName
+$hasProject = Test-Path $openstackDir\build\$buildFor
 $hasNova = Test-Path $buildDir\nova
 $hasNeutron = Test-Path $buildDir\neutron
 $hasNeutronTemplate = Test-Path $neutronTemplate
