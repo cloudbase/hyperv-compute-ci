@@ -10,7 +10,7 @@ $projectName = $buildFor.split('/')[-1]
 . "C:\OpenStack\hyperv-compute-ci\HyperV\scripts\utils.ps1"
 
 $hasProject = Test-Path $buildDir\$projectName
-$hasComputehv = Test-Path $buildDir\hyperv-compute
+$hasComputehv = Test-Path $buildDir\compute-hyperv
 $hasNeutron = Test-Path $buildDir\neutron
 $hasNeutronTemplate = Test-Path $neutronTemplate
 $hasComputehvTemplate = Test-Path $novaTemplate
@@ -116,9 +116,12 @@ git config --global user.email "hyper-v_ci@microsoft.com"
 git config --global user.name "Hyper-V CI"
 
 
-if ($buildFor -eq "openstack/hyperv-compute"){
+if ($buildFor -eq "stackforge/compute-hyperv"){
     ExecRetry {
         GitClonePull "$buildDir\neutron" "https://github.com/openstack/neutron.git" $branchName
+    }
+    ExecRetry {
+        GitClonePull "$buildDir\nova" "https://github.com/openstack/nova.git" $branchName
     }
     ExecRetry {
         GitClonePull "$buildDir\networking-hyperv" "https://github.com/stackforge/networking-hyperv.git" "master"
@@ -203,8 +206,17 @@ ExecRetry {
 }
 
 ExecRetry {
-    & pip install -e C:\OpenStack\build\openstack\hyperv-compute
+    & pip install -e C:\OpenStack\build\stackforge\compute-hyperv
     if ($LastExitCode) { Throw "Failed to install Hyperv-Compute fom repo" }
+    popd
+}
+
+ExecRetry {
+    pushd C:\OpenStack\build\openstack\nova
+    git fetch https://review.openstack.org/openstack/nova refs/changes/20/213720/4
+    git cherry-pick FETCH_HEAD
+    & pip install -e C:\OpenStack\build\openstack\nova
+    if ($LastExitCode) { Throw "Failed to install nova fom repo" }
     popd
 }
 
