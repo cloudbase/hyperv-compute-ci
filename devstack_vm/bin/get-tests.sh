@@ -16,7 +16,7 @@ array_to_regex()
     echo $regex
 }
 
-project=$1
+project=${1:-"hyperv-compute"}
 tests_dir=$2
 test_suite=${3:-"default"}
 
@@ -41,11 +41,8 @@ if [ ! "$exclude_regex" ]; then
 fi
 
 
-if [[ $project == "nova" ]]; then
+if [[ $project == "hyperv-compute" ]]; then
     testr list-tests | grep -v $exclude_regex
-elif [[ $project == "neutron" ]]; then
-
-    testr list-tests | grep "tempest.api.network" | grep -v $exclude_regex
 else
     echo "ERROR: Cannot test for project $project"
     exit 1
