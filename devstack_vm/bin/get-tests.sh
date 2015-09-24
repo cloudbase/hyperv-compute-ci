@@ -16,7 +16,7 @@ array_to_regex()
     echo $regex
 }
 
-project=${1:-"hyperv-compute"}
+project=${1:-"nova"}
 tests_dir=$2
 test_suite=${3:-"default"}
 
