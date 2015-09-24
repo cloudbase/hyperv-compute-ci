@@ -16,7 +16,7 @@ array_to_regex()
     echo $regex
 }
 
-project=${1:-"nova"}
+project=$1
 tests_dir=$2
 test_suite=${3:-"default"}
 
