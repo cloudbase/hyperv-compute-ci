@@ -10,10 +10,10 @@ $projectName = $buildFor.split('/')[-1]
 . "C:\OpenStack\hyperv-compute-ci\HyperV\scripts\utils.ps1"
 
 $hasProject = Test-Path $buildDir\$projectName
-$hasComputehv = Test-Path $buildDir\compute-hyperv
+$hasNova = Test-Path $buildDir\compute-hyperv
 $hasNeutron = Test-Path $buildDir\neutron
 $hasNeutronTemplate = Test-Path $neutronTemplate
-$hasComputehvTemplate = Test-Path $novaTemplate
+$hasNovaTemplate = Test-Path $novaTemplate
 $hasConfigDir = Test-Path $configDir
 $hasBinDir = Test-Path $binDir
 $hasMkisoFs = Test-Path $binDir\mkisofs.exe
@@ -57,13 +57,13 @@ if (-not (Get-Service neutron-hyperv-agent -ErrorAction SilentlyContinue))
     Throw "Neutron Hyper-V Agent Service not registered"
 }
 
-if (-not (get-service hyperv-compute -ErrorAction SilentlyContinue))
+if (-not (get-service nova -ErrorAction SilentlyContinue))
 {
-    Throw "Hyperv-Compute Service not registered"
+    Throw "Nova Service not registered"
 }
 
-if ($(Get-Service hyperv-compute).Status -ne "Stopped"){
-    Throw "Hyperv-Compute service is still running"
+if ($(Get-Service nova).Status -ne "Stopped"){
+    Throw "Nova service is still running"
 }
 
 if ($(Get-Service neutron-hyperv-agent).Status -ne "Stopped"){
@@ -104,8 +104,8 @@ if (($hasMkisoFs -eq $false) -or ($hasQemuImg -eq $false)){
     }
 }
 
-if ($hasComputehvTemplate -eq $false){
-    Throw "Hyperv-Compute template not found"
+if ($hasNovaTemplate -eq $false){
+    Throw "Nova template not found"
 }
 
 if ($hasNeutronTemplate -eq $false){
@@ -235,7 +235,7 @@ if (($branchName.ToLower().CompareTo($('stable/juno').ToLower()) -eq 0) -or ($br
     $rabbitUser = "guest"
 }
 
-$ComputehvConfig = (gc "$templateDir\nova.conf").replace('[DEVSTACK_IP]', "$devstackIP").Replace('[LOGDIR]', "$openstackLogs").Replace('[RABBITUSER]', $rabbitUser)
+$NovaConfig = (gc "$templateDir\nova.conf").replace('[DEVSTACK_IP]', "$devstackIP").Replace('[LOGDIR]', "$openstackLogs").Replace('[RABBITUSER]', $rabbitUser)
 $neutronConfig = (gc "$templateDir\neutron_hyperv_agent.conf").replace('[DEVSTACK_IP]', "$devstackIP").Replace('[LOGDIR]', "$openstackLogs").Replace('[RABBITUSER]', $rabbitUser)
 
 Set-Content C:\OpenStack\etc\nova.conf $ComputehvConfig
@@ -251,9 +251,9 @@ if ($? -eq $false){
 cp "$templateDir\policy.json" "$configDir\"
 cp "$templateDir\interfaces.template" "$configDir\"
 
-$hasComputehvExec = Test-Path "C:\Python27\Scripts\hyperv-compute.exe"
-if ($hasComputehvExec -eq $false){
-    Throw "No Hyperv-COmpute exe found"
+$hasNovaExec = Test-Path "C:\Python27\Scripts\nova-compute.exe"
+if ($hasNovaExec -eq $false){
+    Throw "No Nova-Compute exe found"
 }
 
 $hasNeutronExec = Test-Path "C:\Python27\Scripts\neutron-hyperv-agent.exe"
@@ -267,20 +267,20 @@ Copy-Item -Recurse $configDir "$remoteConfigs\$hostname"
 
 Write-Host "Starting the services"
 
-Write-Host "Starting hyperv-compute service"
+Write-Host "Starting nova-compute service"
 Try
 {
-    Start-Service hyperv-compute
+    Start-Service nova-compute
 }
 Catch
 {
     $proc = Start-Process -PassThru -RedirectStandardError "$openstackLogs\process_error.txt" -RedirectStandardOutput "$openstackLogs\process_output.txt" -FilePath "$pythonDir\Scripts\nova-compute.exe" -ArgumentList "--config-file $configDir\nova.conf"
     Start-Sleep -s 30
     if (! $proc.HasExited) {Stop-Process -Id $proc.Id -Force}
-    Throw "Can not start the hyperv-compute service"
+    Throw "Can not start the nova-compute service"
 }
 Start-Sleep -s 30
-if ($(get-service hyperv-compute).Status -eq "Stopped")
+if ($(get-service nova-compute).Status -eq "Stopped")
 {
     Write-Host "We try to start:"
     Write-Host Start-Process -PassThru -RedirectStandardError "$openstackLogs\process_error.txt" -RedirectStandardOutput "$openstackLogs\process_output.txt" -FilePath "$pythonDir\Scripts\nova-compute.exe" -ArgumentList "--config-file $configDir\nova.conf"
@@ -300,7 +300,7 @@ if ($(get-service hyperv-compute).Status -eq "Stopped")
     }
     else
     {
-    	Throw "Can not start the hyperv-compute service. The manual run failed as well."
+    	Throw "Can not start the nova-compute service. The manual run failed as well."
     }
 }
 
