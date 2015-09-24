@@ -346,10 +346,10 @@ $virtualenv = "C:\Python27"
 $configDir = "$openstackDir\etc"
 $downloadLocation = "http://dl.openstack.tld/"
 
-$computehvServiceName = "hyperv-compute"
-$computehvServiceDescription = "OpensStack Hyperv-Compute Service"
-$computehvServiceExecutable = "$virtualenv\Scripts\hyperv-compute.exe"
-$computehvServiceConfig = "$configDir\nova.conf"
+$novaServiceName = "nova-compute"
+$novaServiceDescription = "OpenStack nova Compute Service"
+$novaServiceExecutable = "$virtualenv\Scripts\nova-compute.exe"
+$novaServiceConfig = "$configDir\nova.conf"
 
 $neutronServiceName = "neutron-hyperv-agent"
 $neutronServiceDescription = "OpenStack Neutron Hyper-V Agent Service"
@@ -496,6 +496,6 @@ Function Check-Service
     }
 }
 
-Check-Service $computehvServiceName $computehvServiceDescription $computehvServiceExecutable $computehvServiceConfig
+Check-Service $novaServiceName $novaServiceDescription $novaServiceExecutable $novaServiceConfig
 
 Check-Service $neutronServiceName $neutronServiceDescription $neutronServiceExecutable $neutronServiceConfig
