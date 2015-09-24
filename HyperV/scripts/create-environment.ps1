@@ -206,17 +206,17 @@ ExecRetry {
 }
 
 ExecRetry {
-    & pip install -e C:\OpenStack\build\stackforge\compute-hyperv
-    if ($LastExitCode) { Throw "Failed to install Hyperv-Compute fom repo" }
-    popd
-}
-
-ExecRetry {
     pushd C:\OpenStack\build\openstack\nova
     git fetch https://review.openstack.org/openstack/nova refs/changes/20/213720/5
     git cherry-pick FETCH_HEAD
     & pip install -e C:\OpenStack\build\openstack\nova
     if ($LastExitCode) { Throw "Failed to install nova fom repo" }
+    popd
+}
+
+ExecRetry {
+    & pip install -e C:\OpenStack\build\stackforge\compute-hyperv
+    if ($LastExitCode) { Throw "Failed to install Hyperv-Compute fom repo" }
     popd
 }
 
