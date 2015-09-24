@@ -118,6 +118,9 @@ sleep 30
 wait_for_listening_port $FLOATING_IP 22 30 || { echo "nova console-log $NAME:"; nova console-log "$NAME"; echo "Failed listening for ssh port on devstack";exit 1; }
 sleep 5
 
+echo "creating /opt/stack/compute-hyperv"
+run_ssh_cmd_with_retry ubuntu@$FLOATING_IP $DEVSTACK_SSH_KEY "mkdir /opt/stack/compute-hyperv" 1
+
 echo "adding apt-cacher-ng:"
 run_ssh_cmd_with_retry ubuntu@$FLOATING_IP $DEVSTACK_SSH_KEY 'echo "Acquire::http { Proxy \"http://10.21.7.214:3142\" };" | sudo tee --append /etc/apt/apt.conf.d/90-apt-proxy.conf' 1
 
