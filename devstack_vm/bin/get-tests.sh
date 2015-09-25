@@ -41,7 +41,7 @@ if [ ! "$exclude_regex" ]; then
 fi
 
 
-if [[ $project == "nova" ]]; then
+if [[ $project == "compute-hyperv" ]]; then
     testr list-tests | grep -v $exclude_regex
 else
     echo "ERROR: Cannot test for project $project"
