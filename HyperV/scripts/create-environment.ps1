@@ -194,7 +194,7 @@ function cherry_pick($commit){
 }
 
 ExecRetry {
-    & pip install -e C:\OpenStack\build\openstack\networking-hyperv
+    & pip install C:\OpenStack\build\openstack\networking-hyperv
     if ($LastExitCode) { Throw "Failed to install networking-hyperv from repo" }
     popd
 }
@@ -215,7 +215,7 @@ ExecRetry {
 }
 
 ExecRetry {
-    & pip install -e C:\OpenStack\build\stackforge\compute-hyperv
+    & pip install C:\OpenStack\build\stackforge\compute-hyperv
     if ($LastExitCode) { Throw "Failed to install Hyperv-Compute fom repo" }
     popd
 }
