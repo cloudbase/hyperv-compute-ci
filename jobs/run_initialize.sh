@@ -155,7 +155,7 @@ echo ZUUL_SITE=$ZUUL_SITE >> /home/jenkins-slave/runs/devstack_params.$ZUUL_UUID
 
 # Set ZUUL IP in hosts file
 ZUUL="10.21.7.8"
-if [ `grep -qi zuul /etc/hosts` ] ; then
+if ! grep -qi zuul /etc/hosts ; then
     echo "$ZUUL zuul.openstack.tld"  >> /etc/hosts
 fi
 
