@@ -9,6 +9,15 @@ HOSTNAME=$(hostname)
 
 sudo sed -i '2i127.0.0.1  '$HOSTNAME'' /etc/hosts
 
+ZUUL="10.21.7.8"
+ZUUL_MANILA="10.21.7.43"
+ZUUL_CINDER="10.21.7.213"
+if  ! grep -qi zuul /etc/hosts ; then
+    echo "$ZUUL zuul.openstack.tld" > /etc/hosts
+    echo "$ZUUL_MANILA zuul-manila.openstack.tld"  >> /etc/hosts
+    echo "$ZUUL_CINDERzuul-cinder.openstack.tld"  >> /etc/hosts
+fi
+
 # Add pip cache for devstack
 mkdir -p $HOME/.pip
 echo "[global]" > $HOME/.pip/pip.conf
