@@ -190,11 +190,13 @@ run_ssh_cmd_with_retry ubuntu@$FLOATING_IP $DEVSTACK_SSH_KEY 'mkdir -p /openstac
 echo `date -u +%H:%M:%S` "Joining Hyper-V node: $hyperv01"
 nohup /usr/local/src/hyperv-compute-ci/jobs/build_hv01.sh &
 pid_hv01=$!
-wait $pid_hv01
 
 echo `date -u +%H:%M:%S` "Joining Hyper-V node: $hyperv02"
 nohup /usr/local/src/hyperv-compute-ci/jobs/build_hv02.sh &
 pid_hv02=$!
+
+# Wait for both nodes to finish building and joining
+wait $pid_hv01
 wait $pid_hv02
 
 #check for nova join (must equal 2)
