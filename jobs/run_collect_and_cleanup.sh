@@ -48,10 +48,16 @@ ssh -o "UserKnownHostsFile /dev/null" -o "StrictHostKeyChecking no" -i $DEVSTACK
 
 if [ "$IS_DEBUG_JOB" != "yes" ]
 	then
+		jen_date=$(date +%d/%m/%Y-%H:%M:%S)
 		echo "Detaching and cleaning Hyper-V node 1"
 		teardown_hyperv $hyperv01 $WIN_USER $WIN_PASS
+		echo "$jen_date;$ZUUL_PROJECT;$ZUUL_BRANCH;$ZUUL_CHANGE;$ZUUL_PATCHSET;$hyperv01;FREE" >> /home/jenkins-slave/hypervnodes.log
+		
+		jen_date=$(date +%d/%m/%Y-%H:%M:%S)
 		echo "Detaching and cleaning Hyper-V node 2"
 		teardown_hyperv $hyperv02 $WIN_USER $WIN_PASS
+		echo "$jen_date;$ZUUL_PROJECT;$ZUUL_BRANCH;$ZUUL_CHANGE;$ZUUL_PATCHSET;$hyperv02;FREE" >> /home/jenkins-slave/hypervnodes.log
+		
 		echo "Creating logs destination folder"
 		ssh -o "UserKnownHostsFile /dev/null" -o "StrictHostKeyChecking no" -i $LOGS_SSH_KEY logs@logs.openstack.tld "if [ -z '$ZUUL_CHANGE' ] || [ -z '$ZUUL_PATCHSET' ]; then echo 'Missing parameters!'; exit 1; elif [ ! -d /srv/logs/compute-hyperv/$ZUUL_CHANGE/$ZUUL_PATCHSET ]; then mkdir -p /srv/logs/compute-hyperv/$ZUUL_CHANGE/$ZUUL_PATCHSET; else rm -rf /srv/logs/compute-hyperv/$ZUUL_CHANGE/$ZUUL_PATCHSET/*; fi"
 
