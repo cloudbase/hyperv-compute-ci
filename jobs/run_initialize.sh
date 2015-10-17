@@ -214,10 +214,12 @@ wait $pid_hv02
 cat /home/jenkins-slave/logs/hyperv-build-log-$ZUUL_UUID-$hyperv02
 
 # Stopping HyperV services and cleaning up logs & starting them back - workaround because HyperV build finished before devstack
-run_wsmancmd_with_retry $hyperv01 $WIN_USER $WIN_PASS 'net stop nova-compute & net stop neutron-hyperv-agent & sleep 15 & del C:\OpenStack\Log\* '
-run_wsmancmd_with_retry $hyperv02 $WIN_USER $WIN_PASS 'net stop nova-compute & net stop neutron-hyperv-agent & sleep 15 & del C:\OpenStack\Log\* '
-run_wsmancmd_with_retry $hyperv01 $WIN_USER $WIN_PASS 'net start nova-compute & net start neutron-hyperv-agent'
-run_wsmancmd_with_retry $hyperv02 $WIN_USER $WIN_PASS 'net start nova-compute & net start neutron-hyperv-agent'
+run_wsmancmd_with_retry $hyperv01 $WIN_USER $WIN_PASS 'powershell Stop-Service nova-compute && powershell Stop-Service neutron-hyperv-agent'
+run_wsmancmd_with_retry $hyperv01 $WIN_USER $WIN_PASS 'powershell Remove-Item -force C:\OpenStack\Log\*'
+run_wsmancmd_with_retry $hyperv02 $WIN_USER $WIN_PASS 'powershell Stop-Service nova-compute && powershell Stop-Service neutron-hyperv-agent'
+run_wsmancmd_with_retry $hyperv02 $WIN_USER $WIN_PASS 'powershell Remove-Item -force C:\OpenStack\Log\*'
+run_wsmancmd_with_retry $hyperv01 $WIN_USER $WIN_PASS 'powershell Start-Service nova-compute && powershell Start-Service neutron-hyperv-agent'
+run_wsmancmd_with_retry $hyperv02 $WIN_USER $WIN_PASS 'powershell Start-Service nova-compute && powershell Start-Service neutron-hyperv-agent'
 
 echo "Allow 1 minute for services to connect to devstack.."
 sleep 60 
