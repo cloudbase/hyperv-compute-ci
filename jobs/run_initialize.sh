@@ -193,6 +193,9 @@ echo `date -u +%H:%M:%S` "Started to build devstack as a threaded job"
 nohup /usr/local/src/hyperv-compute-ci/jobs/build_devstack.sh > /home/jenkins-slave/logs/devstack-build-log-$ZUUL_UUID 2>&1 &
 pid_devstack=$!
 
+echo "Sleeping to compensate in case HyperV nodes finish building before devstack"
+sleep 600
+
 # Building and joining HyperV nodes
 echo `date -u +%H:%M:%S` "Started building & joining Hyper-V node: $hyperv01"
 nohup /usr/local/src/hyperv-compute-ci/jobs/build_hv01.sh > /home/jenkins-slave/logs/hyperv-build-log-$ZUUL_UUID-$hyperv01 2>&1 &
