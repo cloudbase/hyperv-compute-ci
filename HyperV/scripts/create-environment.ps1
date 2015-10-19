@@ -1,7 +1,7 @@
 Param(
     [Parameter(Mandatory=$true)][string]$devstackIP,
     [string]$branchName='master',
-    [string]$buildFor='stackforge/compute-hyperv'
+    [string]$buildFor='openstack/compute-hyperv'
 )
 
 $projectName = $buildFor.split('/')[-1]
@@ -114,7 +114,7 @@ git config --global user.email "hyper-v_ci@microsoft.com"
 git config --global user.name "Hyper-V CI"
 
 
-if ($buildFor -eq "stackforge/compute-hyperv"){
+if ($buildFor -eq "openstack/compute-hyperv"){
     ExecRetry {
         GitClonePull "$buildDir\neutron" "https://github.com/openstack/neutron.git" $branchName
     }
@@ -122,7 +122,7 @@ if ($buildFor -eq "stackforge/compute-hyperv"){
         GitClonePull "$buildDir\nova" "https://github.com/openstack/nova.git" $branchName
     }
     ExecRetry {
-        GitClonePull "$buildDir\networking-hyperv" "https://github.com/stackforge/networking-hyperv.git" $branchName
+        GitClonePull "$buildDir\networking-hyperv" "https://github.com/openstack/networking-hyperv.git" $branchName
     }
 }else{
     Throw "Cannot build for project: $buildFor"
@@ -215,7 +215,7 @@ ExecRetry {
 }
 
 ExecRetry {
-    & pip install C:\OpenStack\build\stackforge\compute-hyperv
+    & pip install C:\OpenStack\build\openstack\compute-hyperv
     if ($LastExitCode) { Throw "Failed to install Hyperv-Compute fom repo" }
     popd
 }
