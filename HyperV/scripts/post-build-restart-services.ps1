@@ -8,15 +8,9 @@
 
 Write-Host "post-build: Stoping the services!"
 
-Try
-{
-    Stop-Service nova-compute
-}
+Stop-Service nova-compute
 
-Try
-{
-    Stop-Service neutron-hyperv-agent
-}
+Stop-Service neutron-hyperv-agent
 
 Write-Host "post-build: Cleaning previous logs!"
 
