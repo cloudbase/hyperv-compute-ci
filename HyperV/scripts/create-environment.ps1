@@ -200,7 +200,7 @@ ExecRetry {
 }
 
 ExecRetry {
-    & pip install -e C:\OpenStack\build\openstack\neutron
+    & pip install C:\OpenStack\build\openstack\neutron
     if ($LastExitCode) { Throw "Failed to install neutron from repo" }
     popd
 }
@@ -209,7 +209,7 @@ ExecRetry {
     pushd C:\OpenStack\build\openstack\nova
     git fetch https://review.openstack.org/openstack/nova refs/changes/20/213720/5
     cherry_pick FETCH_HEAD
-    & pip install -e C:\OpenStack\build\openstack\nova
+    & pip install C:\OpenStack\build\openstack\nova
     if ($LastExitCode) { Throw "Failed to install nova fom repo" }
     popd
 }
