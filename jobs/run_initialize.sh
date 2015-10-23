@@ -46,7 +46,11 @@ echo "Image used is: $devstack_image"
 echo "Deploying devstack $NAME"
 
 # Boot the new 10G of RAM flavor
-nova boot --availability-zone hyper-v --flavor nova.devstack --image $devstack_image --key-name default --security-groups devstack --nic net-id="$NET_ID" "$NAME" --poll
+VMID=$(nova boot --availability-zone hyper-v --flavor nova.devstack --image $devstack_image --key-name default --security-groups devstack --nic net-id="$NET_ID" "$NAME" --poll | awk '{if (NR == 21) {print $4}}')
+export VMID=$VMID
+echo VMID=$VMID >>  /home/jenkins-slave/runs/devstack_params.$ZUUL_UUID.txt
+echo VMID=$VMID
+
 if [ $? -ne 0 ]
 then
     echo "Failed to create devstack VM: $NAME"
@@ -54,12 +58,8 @@ then
     exit 1
 fi
 
-nova show "$NAME"
-
-export VMID=`nova show $NAME | awk '{if (NR == 20) {print $4}}'`
-echo VMID=$VMID >> /home/jenkins-slave/runs/devstack_params.$ZUUL_UUID.txt
-
-echo VMID=$VMID
+echo "Showing details of the new created instance: $VMID"
+nova show "$VMID"
 
 echo "Fetching devstack VM fixed IP address"
 FIXED_IP=$(nova show "$VMID" | grep "private network" | awk '{print $5}')
