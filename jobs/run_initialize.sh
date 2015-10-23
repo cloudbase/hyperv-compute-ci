@@ -53,8 +53,8 @@ echo VMID=$VMID
 
 if [ $? -ne 0 ]
 then
-    echo "Failed to create devstack VM: $NAME"
-    nova show "$NAME"
+    echo "Failed to create devstack VM: $VMID"
+    nova show "$VMID"
     exit 1
 fi
 
@@ -106,9 +106,8 @@ exec_with_retry "nova add-floating-ip $VMID $FLOATING_IP" 15 5 || { echo "nova s
 echo "nova show $VMID:"
 nova show "$VMID"
 
-sleep 30
+sleep 60
 wait_for_listening_port $FLOATING_IP 22 30 || { echo "nova console-log $VMID:"; nova console-log "$VMID"; echo "Failed listening for ssh port on devstack";exit 1; }
-sleep 5
 
 echo "adding $NAME to /etc/hosts"
 run_ssh_cmd_with_retry ubuntu@$FLOATING_IP $DEVSTACK_SSH_KEY 'VMNAME=$(hostname); sudo sed -i "s/127.0.0.1 localhost/127.0.0.1 localhost $VMNAME/g" /etc/hosts' 1
