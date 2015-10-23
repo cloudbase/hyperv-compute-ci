@@ -62,7 +62,7 @@ echo VMID=$VMID >> /home/jenkins-slave/runs/devstack_params.$ZUUL_UUID.txt
 echo VMID=$VMID
 
 echo "Fetching devstack VM fixed IP address"
-FIXED_IP=$(nova show "$NAME" | grep "private network" | awk '{print $5}')
+FIXED_IP=$(nova show "$VMID" | grep "private network" | awk '{print $5}')
 export FIXED_IP="${FIXED_IP//,}"
 
 COUNT=1
@@ -71,11 +71,11 @@ do
     if [ $COUNT -lt 10 ]
     then
         sleep 15
-        FIXED_IP=$(nova show "$NAME" | grep "private network" | awk '{print $5}')
+        FIXED_IP=$(nova show "$VMID" | grep "private network" | awk '{print $5}')
         export FIXED_IP="${FIXED_IP//,}"
         COUNT=$(($COUNT + 1))
     else
-        echo "Failed to get fixed IP using nova show $NAME"
+        echo "Failed to get fixed IP using nova show $VMID"
         echo "Trying to get the IP from console-log and port-list"
         FIXED_IP1=`nova console-log $VMID | grep "ci-info" | grep "eth0" | grep "True" | awk '{print $7}'`
         echo "From console-log we got IP: $FIXED_IP1"
