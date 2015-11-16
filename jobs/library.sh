@@ -85,13 +85,8 @@ teardown_hyperv () {
     run_wsmancmd_with_retry $1 $2 $3 'powershell -ExecutionPolicy RemoteSigned C:\OpenStack\hyperv-compute-ci\HyperV\scripts\teardown.ps1'
 }
 
-generate_vlan_ranges () {
-	vlan_start=500
-	vlan_step=25
-	vlan_stop=999
-
-	mysql -u root cbs_data -e "truncate table vlanIds"
-	for i in `seq $vlan_start $vlan_step $vlan_stop`;do mysql -u root cbs_data -e "insert into vlanIds(vlanStart,vlanEnd) VALUES($i,$(($i+$vlan_step-1)));";done;
+post_build_restart_hyperv_services (){
+    run_wsmancmd_with_retry $1 $2 $3 '"powershell -ExecutionPolicy RemoteSigned C:\OpenStack\hyperv-compute-ci\HyperV\scripts\post-build-restart-services.ps1 >>\\'$FIXED_IP'\openstack\logs\create-environment-'$1'.log 2>&1"'
 }
 
 poll_shh () {
