@@ -1,2 +1,2 @@
 # hyperv-compute-ci
-Hyper-V Compute CI
+Cloudbase Hyper-V Compute CI
