@@ -164,7 +164,7 @@ Add-Content "$env:APPDATA\pip\pip.ini" $pip_conf_content
 
 & easy_install -U pip
 & pip install -U setuptools
-& pip install -U wmi
+& pip install -U --pre "PyMI>=1.0.0.dev4"
 & pip install cffi
 & pip install numpy
 popd
@@ -194,6 +194,7 @@ function cherry_pick($commit) {
 }
 
 ExecRetry {
+    pushd C:\OpenStack\build\openstack\neutron
     & pip install C:\OpenStack\build\openstack\neutron
     if ($LastExitCode) { Throw "Failed to install neutron from repo" }
     popd
