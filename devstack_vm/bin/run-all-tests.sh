@@ -24,6 +24,11 @@ pushd $basedir
 tests_file=$(tempfile)
 $basedir/get-tests.sh $project_name $tests_dir $test_suite > $tests_file
 
+echo "Activating virtual env."
+set +u
+source $tests_dir/.tox/full/bin/activate
+set -u
+
 echo "Started unning tests."
 
 if [ ! -d "$tests_dir/.testrepository" ]; then
@@ -51,9 +56,9 @@ fi
 rm $tests_file
 
 echo "Generating HTML report..."
-$basedir/get-results-html.sh $log_file $results_html_file
+python $basedir/subunit2html.py $log_file $results_html_file
 
-cat $log_file | /opt/stack/tempest/tools/colorizer.py > $tempest_output_file 2>&1 || true
+cat $log_file | subunit-trace -n -f > $tempest_output_file 2>&1 || true
 
 subunit-stats $log_file > $subunit_stats_file
 exit_code=$?
