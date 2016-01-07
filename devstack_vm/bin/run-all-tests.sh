@@ -21,13 +21,13 @@ pushd $basedir
 
 . $basedir/utils.sh
 
-tests_file=$(tempfile)
-$basedir/get-tests.sh $project_name $tests_dir $test_suite > $tests_file
-
 echo "Activating virtual env."
 set +u
 source $tests_dir/.tox/full/bin/activate
 set -u
+
+tests_file=$(tempfile)
+$basedir/get-tests.sh $project_name $tests_dir $test_suite > $tests_file
 
 echo "Started unning tests."
 
