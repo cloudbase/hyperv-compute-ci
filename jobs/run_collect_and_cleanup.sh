@@ -102,7 +102,7 @@ if [ "$IS_DEBUG_JOB" != "yes" ]
 
 		echo "Cleaning iSCSI targets"
 		python /home/jenkins-slave/tools/wsman.py -U https://$hyperv01:5986/wsman -u $WIN_USER -p $WIN_PASS 'powershell $targets = gwmi -ns root/microsoft/windows/storage -class msft_iscsitarget; $targets[0].update();' 
-		python /home/jenkins-slave/tools/wsman.py -U https://$hyperv01:5986/wsman -u $WIN_USER -p $WIN_PASS 'powershell $targets = gwmi -ns root/microsoft/windows/storage -class msft_iscsitarget; $targets[0].update();'
+		python /home/jenkins-slave/tools/wsman.py -U https://$hyperv02:5986/wsman -u $WIN_USER -p $WIN_PASS 'powershell $targets = gwmi -ns root/microsoft/windows/storage -class msft_iscsitarget; $targets[0].update();'
 
 	else
 		TIMESTAMP=$(date +%d-%m-%Y_%H-%M)
