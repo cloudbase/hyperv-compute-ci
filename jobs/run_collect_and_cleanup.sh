@@ -100,10 +100,6 @@ if [ "$IS_DEBUG_JOB" != "yes" ]
 		nova floating-ip-delete "$FLOATING_IP"
 		rm -f /home/jenkins-slave/runs/devstack_params.$ZUUL_UUID.txt
 
-		echo "Cleaning iSCSI targets"
-		python /home/jenkins-slave/tools/wsman.py -U https://$hyperv01:5986/wsman -u $WIN_USER -p $WIN_PASS 'powershell $targets = gwmi -ns root/microsoft/windows/storage -class msft_iscsitarget; $targets[0].update();' 
-		python /home/jenkins-slave/tools/wsman.py -U https://$hyperv02:5986/wsman -u $WIN_USER -p $WIN_PASS 'powershell $targets = gwmi -ns root/microsoft/windows/storage -class msft_iscsitarget; $targets[0].update();'
-
 	else
 		TIMESTAMP=$(date +%d-%m-%Y_%H-%M)
         	echo "Creating logs destination folder"
@@ -135,5 +131,9 @@ if [ "$IS_DEBUG_JOB" != "yes" ]
                 echo "Removing temporary devstack log.."
                 rm -fv /home/jenkins-slave/logs/devstack-build-log-$ZUUL_UUID
 fi
+
+		echo "Cleaning iSCSI targets"
+		python /home/jenkins-slave/tools/wsman.py -U https://$hyperv01:5986/wsman -u $WIN_USER -p $WIN_PASS 'powershell $targets = gwmi -ns root/microsoft/windows/storage -class msft_iscsitarget; $targets[0].update();' 
+		python /home/jenkins-slave/tools/wsman.py -U https://$hyperv02:5986/wsman -u $WIN_USER -p $WIN_PASS 'powershell $targets = gwmi -ns root/microsoft/windows/storage -class msft_iscsitarget; $targets[0].update();'
 
 set -e
