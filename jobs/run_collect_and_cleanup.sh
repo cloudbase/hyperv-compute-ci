@@ -132,8 +132,15 @@ if [ "$IS_DEBUG_JOB" != "yes" ]
                 rm -fv /home/jenkins-slave/logs/devstack-build-log-$ZUUL_UUID
 fi
 
-		echo "Cleaning iSCSI targets"
-		python /home/jenkins-slave/tools/wsman.py -U https://$hyperv01:5986/wsman -u $WIN_USER -p $WIN_PASS 'powershell $targets = gwmi -ns root/microsoft/windows/storage -class msft_iscsitarget; $targets[0].update();' 
-		python /home/jenkins-slave/tools/wsman.py -U https://$hyperv02:5986/wsman -u $WIN_USER -p $WIN_PASS 'powershell $targets = gwmi -ns root/microsoft/windows/storage -class msft_iscsitarget; $targets[0].update();'
+		echo `date -u +%H:%M:%S` "Started cleaning iSCSI targets"
+		nohup python /home/jenkins-slave/tools/wsman.py -U https://$hyperv01:5986/wsman -u $WIN_USER -p $WIN_PASS 'powershell $targets = gwmi -ns root/microsoft/windows/storage -class msft_iscsitarget; $targets[0].update();'
+		pid_clean_hyperv01=$!
+
+		nohup python /home/jenkins-slave/tools/wsman.py -U https://$hyperv02:5986/wsman -u $WIN_USER -p $WIN_PASS 'powershell $targets = gwmi -ns root/microsoft/windows/storage -class msft_iscsitarget; $targets[0].update();'
+		pid_clean_hyperv02=$!
+
+		#Waiting for iSCSI cleanup
+		wait $pid_clean_hyperv01
+		wait $pid_clean_hyperv02
 
 set -e
