@@ -1,3 +1,4 @@
+#!/bin/bash
 source /home/jenkins-slave/tools/keystonerc_admin
 source /usr/local/src/hyperv-compute-ci/jobs/library.sh
 
