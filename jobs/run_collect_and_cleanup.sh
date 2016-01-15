@@ -1,3 +1,5 @@
+#!/bin/bash
+
 source /home/jenkins-slave/tools/keystonerc_admin
 source /usr/local/src/hyperv-compute-ci/jobs/library.sh
 
@@ -134,13 +136,22 @@ fi
 
 		echo `date -u +%H:%M:%S` "Started cleaning iSCSI targets"
 		nohup python /home/jenkins-slave/tools/wsman.py -U https://$hyperv01:5986/wsman -u $WIN_USER -p $WIN_PASS 'powershell $targets = gwmi -ns root/microsoft/windows/storage -class msft_iscsitarget; $ErrorActionPreference = "Continue"; $targets[0].update();' &
-		pid_clean_hyperv01=$!
-
+		pid_clean_target_hyperv01=$!
+		
+		nohup python /home/jenkins-slave/tools/wsman.py -U https://$hyperv01:5986/wsman -u $WIN_USER -p $WIN_PASS 'powershell $targets = gwmi -ns root/microsoft/windows/storage -class msft_iscsitargetportal; foreach ($target in $targets) {$target.remove()}' &
+		pid_clean_portal_hyperv01=$!
+		
 		nohup python /home/jenkins-slave/tools/wsman.py -U https://$hyperv02:5986/wsman -u $WIN_USER -p $WIN_PASS 'powershell $targets = gwmi -ns root/microsoft/windows/storage -class msft_iscsitarget; $ErrorActionPreference = "Continue" ;$targets[0].update();' &
-		pid_clean_hyperv02=$!
+		pid_clean_target_hyperv02=$!
+		
+		nohup python /home/jenkins-slave/tools/wsman.py -U https://$hyperv02:5986/wsman -u $WIN_USER -p $WIN_PASS 'powershell $targets = gwmi -ns root/microsoft/windows/storage -class msft_iscsitargetportal; foreach ($target in $targets) {$target.remove()}' &
+		pid_clean_portal_hyperv02=$!
 
 		#Waiting for iSCSI cleanup
-		wait $pid_clean_hyperv01
-		wait $pid_clean_hyperv02
-
+		wait $pid_clean_target_hyperv01
+		wait $pid_clean_target_hyperv02
+		wait $pid_clean_portal_hyperv01
+		wait $pid_clean_portal_hyperv02
+		
+		echo `date -u +%H:%M:%S` "Finished cleaning iSCSI targets"
 set -e
