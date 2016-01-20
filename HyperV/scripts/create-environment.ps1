@@ -226,16 +226,17 @@ ExecRetry {
     Write-Host "Doing fetch... refs/changes/39/265239/4"
     git fetch https://review.openstack.org/openstack/nova refs/changes/39/265239/4
     cherry_pick FETCH_HEAD
-    # hyperv: Drop JSON for supported_instances
-    Write-Host "Doing fetch... refs/changes/25/270325/1"
-    git fetch https://review.openstack.org/openstack/nova refs/changes/25/270325/1
-    cherry_pick FETCH_HEAD
     & pip install C:\OpenStack\build\openstack\nova
     if ($LastExitCode) { Throw "Failed to install nova fom repo" }
     popd
 }
 
 ExecRetry {
+    pushd C:\OpenStack\build\openstack\compute-hyperv
+    # hyperv: Drop JSON for supported_instances
+    Write-Host "Doing fetch... refs/changes/25/270325/1"
+    git fetch https://review.openstack.org/openstack/compute-hyperv refs/changes/25/270325/1
+    cherry_pick FETCH_HEAD
     & pip install C:\OpenStack\build\openstack\compute-hyperv
     if ($LastExitCode) { Throw "Failed to install Hyperv-Compute fom repo" }
     popd
