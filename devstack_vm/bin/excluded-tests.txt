@@ -1,7 +1,3 @@
-# Rescue (to be removed when the feature is added)
-tempest.api.compute.servers.test_server_rescue.ServerRescueTestJSON.
-tempest.api.compute.servers.test_server_rescue_negative.ServerRescueNegativeTestJSON.
-
 # Hyper-V does not support attaching vNics to a running instance 
 tempest.api.compute.servers.test_attach_interfaces.AttachInterfacesTestJSON.test_create_list_show_delete_interfaces
 tempest.scenario.test_network_basic_ops.TestNetworkBasicOps.test_hotplug_nic
