@@ -208,8 +208,8 @@ ExecRetry {
 ExecRetry {
     pushd C:\OpenStack\build\openstack\networking-hyperv
     # Checks if port features are being added
-    Write-Host "Doing fetch... refs/changes/28/265728/5"
-    git fetch https://review.openstack.org/openstack/nova refs/changes/28/265728/5
+    Write-Host "Doing fetch... refs/changes/28/265728/7"
+    git fetch https://review.openstack.org/openstack/nova refs/changes/28/265728/7
     cherry_pick FETCH_HEAD
     & pip install C:\OpenStack\build\openstack\networking-hyperv
     if ($LastExitCode) { Throw "Failed to install networking-hyperv from repo" }
