@@ -167,7 +167,7 @@ else
 }
 Add-Content "$env:APPDATA\pip\pip.ini" $pip_conf_content
 
-& easy_install -U pip==7.1.2
+& easy_install -U pip
 & pip install -U setuptools
 & pip install -U --pre "PyMI>=1.0.0.dev4"
 & pip install cffi
