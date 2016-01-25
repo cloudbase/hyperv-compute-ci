@@ -207,13 +207,9 @@ ExecRetry {
 
 ExecRetry {
     pushd C:\OpenStack\build\openstack\networking-hyperv
-    # Refactors disconnect_switch_port
-    Write-Host "Doing fetch... refs/changes/39/264939/7"
-    git fetch https://review.openstack.org/openstack/nova refs/changes/39/264939/7
-    cherry_pick FETCH_HEAD
     # Checks if port features are being added
-    Write-Host "Doing fetch... refs/changes/28/265728/5"
-    git fetch https://review.openstack.org/openstack/nova refs/changes/28/265728/5
+    Write-Host "Doing fetch... refs/changes/28/265728/7"
+    git fetch https://review.openstack.org/openstack/nova refs/changes/28/265728/7
     cherry_pick FETCH_HEAD
     & pip install C:\OpenStack\build\openstack\networking-hyperv
     if ($LastExitCode) { Throw "Failed to install networking-hyperv from repo" }
@@ -270,7 +266,7 @@ if ($hasNeutronExec -eq $false){
 
 
 Remove-Item -Recurse -Force "$remoteConfigs\$hostname\*"
-Copy-Item -Recurse $configDir "$remoteConfigs\$hostname"
+Copy-Item -Recurse $confi00gDir "$remoteConfigs\$hostname"
 
 Write-Host "Starting the services"
 
