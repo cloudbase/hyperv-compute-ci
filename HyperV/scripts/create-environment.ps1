@@ -266,7 +266,7 @@ if ($hasNeutronExec -eq $false){
 
 
 Remove-Item -Recurse -Force "$remoteConfigs\$hostname\*"
-Copy-Item -Recurse $confi00gDir "$remoteConfigs\$hostname"
+Copy-Item -Recurse $configDir "$remoteConfigs\$hostname"
 
 Write-Host "Starting the services"
 
