@@ -218,10 +218,6 @@ ExecRetry {
 
 ExecRetry {
     pushd C:\OpenStack\build\openstack\nova
-    # Hyper-V: Trace original exception before converting exception
-    Write-Host "Doing fetch... refs/changes/39/265239/4"
-    git fetch https://review.openstack.org/openstack/nova refs/changes/39/265239/4
-    cherry_pick FETCH_HEAD
     & pip install C:\OpenStack\build\openstack\nova
     if ($LastExitCode) { Throw "Failed to install nova fom repo" }
     popd
