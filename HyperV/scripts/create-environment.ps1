@@ -172,6 +172,7 @@ Add-Content "$env:APPDATA\pip\pip.ini" $pip_conf_content
 & pip install -U --pre "PyMI>=1.0.0.dev4"
 & pip install cffi
 & pip install numpy
+& pip install -U cliff==1.15.0
 popd
 
 $hasPipConf = Test-Path "$env:APPDATA\pip"
