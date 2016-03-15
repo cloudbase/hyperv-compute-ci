@@ -124,6 +124,9 @@ if ($buildFor -eq "openstack/compute-hyperv"){
     ExecRetry {
         GitClonePull "$buildDir\networking-hyperv" "https://git.openstack.org/openstack/networking-hyperv.git" $branchName
     }
+    ExecRetry {
+        GitClonePull "$buildDir\os-win" "https://git.openstack.org/openstack/os-win.git" master
+    }
 }else{
     Throw "Cannot build for project: $buildFor"
 }
@@ -224,6 +227,16 @@ ExecRetry {
     pushd C:\OpenStack\build\openstack\compute-hyperv
     & pip install C:\OpenStack\build\openstack\compute-hyperv
     if ($LastExitCode) { Throw "Failed to install Hyperv-Compute fom repo" }
+    popd
+}
+
+ExecRetry {
+    pushd C:\OpenStack\build\openstack\os-win
+    if ($branchName.ToLower().CompareTo('master') -eq 0) {
+        # only install os-win on master.
+        & pip install C:\OpenStack\build\openstack\os-win
+    }
+    if ($LastExitCode) { Throw "Failed to install os-win fom repo" }
     popd
 }
 
