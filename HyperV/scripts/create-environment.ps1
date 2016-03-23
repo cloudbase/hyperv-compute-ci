@@ -235,6 +235,7 @@ ExecRetry {
 
 ExecRetry {
     Write-Host "Content of $buildDir\neutron"
+    Get-ChildItem $buildDir\neutron
     pushd $buildDir\neutron
     & pip install $buildDir\openstack\neutron
     if ($LastExitCode) { Throw "Failed to install neutron from repo" }
