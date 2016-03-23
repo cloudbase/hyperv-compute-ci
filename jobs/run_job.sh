@@ -1,6 +1,6 @@
 #!/bin/bash
 jen_date=$(date +%d/%m/%Y-%H:%M)
-export IS_DEBUG_JOB=$IS_DEBUG_JOB
+export IS_DEBUG_JOB
 set +e
 /usr/local/src/hyperv-compute-ci/jobs/run_initialize.sh 2>&1
 result_init=$?
