@@ -222,8 +222,10 @@ if ($isDebug -eq  'yes') {
 }
 
 ExecRetry {
-    Write-Host "Content of $buildDir\os-win"
-    Get-ChildItem $buildDir\os-win
+    if ($isDebug -eq  'yes') {
+        Write-Host "Content of $buildDir\os-win"
+        Get-ChildItem $buildDir\os-win
+    }
     pushd $buildDir\os-win
     if ($branchName.ToLower().CompareTo('master') -eq 0) {
         # only install os-win on master.
@@ -234,8 +236,10 @@ ExecRetry {
 }
 
 ExecRetry {
-    Write-Host "Content of $buildDir\neutron"
-    Get-ChildItem $buildDir\neutron
+    if ($isDebug -eq  'yes') {
+        Write-Host "Content of $buildDir\neutron"
+        Get-ChildItem $buildDir\neutron
+    }
     pushd $buildDir\neutron
     & pip install $buildDir\openstack\neutron
     if ($LastExitCode) { Throw "Failed to install neutron from repo" }
@@ -243,8 +247,10 @@ ExecRetry {
 }
 
 ExecRetry {
-    Write-Host "Content of $buildDir\networking-hyperv:"
-    Get-ChildItem $buildDir\networking-hyperv
+    if ($isDebug -eq  'yes') {
+        Write-Host "Content of $buildDir\networking-hyperv:"
+        Get-ChildItem $buildDir\networking-hyperv
+    }
     pushd $buildDir\networking-hyperv
     & pip install $buildDir\networking-hyperv
     if ($LastExitCode) { Throw "Failed to install networking-hyperv from repo" }
@@ -252,8 +258,10 @@ ExecRetry {
 }
 
 ExecRetry {
-    Write-Host "Content of $buildDir\nova"
-    Get-ChildItem $buildDir\nova
+    if ($isDebug -eq  'yes') {
+        Write-Host "Content of $buildDir\nova"
+        Get-ChildItem $buildDir\nova
+}
     pushd $buildDir\nova
     & pip install $buildDir\nova
     if ($LastExitCode) { Throw "Failed to install nova fom repo" }
@@ -261,8 +269,10 @@ ExecRetry {
 }
 
 ExecRetry {
-    Write-Host "Content of $buildDir\compute-hyperv"
-    Get-ChildItem $buildDir\compute-hyperv
+    if ($isDebug -eq  'yes') {
+        Write-Host "Content of $buildDir\compute-hyperv"
+        Get-ChildItem $buildDir\compute-hyperv
+    }
     pushd $buildDir\compute-hyperv
     & pip install $buildDir\compute-hyperv    
     if ($LastExitCode) { Throw "Failed to install Hyperv-Compute fom repo" }
