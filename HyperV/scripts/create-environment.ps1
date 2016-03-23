@@ -2,12 +2,15 @@ Param(
     [Parameter(Mandatory=$true)][string]$devstackIP,
     [string]$branchName='master',
     [string]$buildFor='openstack/compute-hyperv'
+    [string]$isDebug='no'
 )
 
-Write-Host "Debug info:"
-Write-Host "devstackIP: $devstackIP"
-Write-Host "branchName: $branchName"
-Write-Host "buildFor: $buildFor"
+if ($isDebug -eq  'yes') {
+    Write-Host "Debug info:"
+    Write-Host "devstackIP: $devstackIP"
+    Write-Host "branchName: $branchName"
+    Write-Host "buildFor: $buildFor"
+}
 
 $projectName = $buildFor.split('/')[-1]
 
@@ -209,12 +212,26 @@ function cherry_pick($commit) {
     $ErrorActionPreference = $eapSet
 }
 
-Write-Host "BuildDir is: $buildDir"
-Write-Host "ProjectName is: $projectName"
-Write-Host "Listing $buildDir parent directory:"
-Get-ChildItem ( Get-Item $buildDir ).Parent.FullName
-Write-Host "Listing $buildDir before install"
-Get-ChildItem $buildDir
+if ($isDebug -eq  'yes') {
+    Write-Host "BuildDir is: $buildDir"
+    Write-Host "ProjectName is: $projectName"
+    Write-Host "Listing $buildDir parent directory:"
+    Get-ChildItem ( Get-Item $buildDir ).Parent.FullName
+    Write-Host "Listing $buildDir before install"
+    Get-ChildItem $buildDir
+}
+
+ExecRetry {
+    Write-Host "Content of $buildDir\os-win"
+    Get-ChildItem $buildDir\os-win
+    pushd $buildDir\os-win
+    if ($branchName.ToLower().CompareTo('master') -eq 0) {
+        # only install os-win on master.
+        & pip install $buildDir\os-win
+    }
+    if ($LastExitCode) { Throw "Failed to install os-win fom repo" }
+    popd
+}
 
 ExecRetry {
     Write-Host "Content of $buildDir\neutron"
@@ -248,18 +265,6 @@ ExecRetry {
     pushd $buildDir\compute-hyperv
     & pip install $buildDir\compute-hyperv    
     if ($LastExitCode) { Throw "Failed to install Hyperv-Compute fom repo" }
-    popd
-}
-
-ExecRetry {
-    Write-Host "Content of $buildDir\os-win"
-    Get-ChildItem $buildDir\os-win
-    pushd $buildDir\os-win
-    if ($branchName.ToLower().CompareTo('master') -eq 0) {
-        # only install os-win on master.
-        & pip install $buildDir\os-win
-    }
-    if ($LastExitCode) { Throw "Failed to install os-win fom repo" }
     popd
 }
 
