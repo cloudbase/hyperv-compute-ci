@@ -261,7 +261,7 @@ ExecRetry {
     if ($isDebug -eq  'yes') {
         Write-Host "Content of $buildDir\nova"
         Get-ChildItem $buildDir\nova
-}
+    }
     pushd $buildDir\nova
     & pip install $buildDir\nova
     if ($LastExitCode) { Throw "Failed to install nova fom repo" }
