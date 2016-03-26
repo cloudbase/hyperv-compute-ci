@@ -93,7 +93,7 @@ if ($hasConfigDir -eq $false) {
 if ($hasProject -eq $false){
     Get-ChildItem $buildDir
     Get-ChildItem ( Get-Item $buildDir ).Parent.FullName
-    Throw "$projectName repository was not found. Please run gerrit-git-pref for this project first"
+    Throw "$projectName repository was not found. Please run gerrit-git-prep.sh for this project first"
 }
 
 if ($hasBinDir -eq $false){
@@ -104,7 +104,7 @@ if (($hasMkisoFs -eq $false) -or ($hasQemuImg -eq $false)){
     Invoke-WebRequest -Uri "http://dl.openstack.tld/openstack_bin.zip" -OutFile "$bindir\openstack_bin.zip"
     if (Test-Path "$7zExec"){
         pushd $bindir
-        & "$7zExec" x -y "$bindir\openstack_bin.zip"
+        & $7zExec x -y "$bindir\openstack_bin.zip"
         Remove-Item -Force "$bindir\openstack_bin.zip"
         popd
     } else {
@@ -123,6 +123,10 @@ if ($hasNeutronTemplate -eq $false){
 git config --global user.email "hyper-v_ci@microsoft.com"
 git config --global user.name "Hyper-V CI"
 
+if ($isDebug -eq  'yes') {
+    Write-Host "Status of $buildDir before GitClonePull"
+    Get-ChildItem $buildDir
+}
 
 if ($buildFor -eq "openstack/compute-hyperv"){
     ExecRetry {
@@ -186,6 +190,7 @@ Add-Content "$env:APPDATA\pip\pip.ini" $pip_conf_content
 & pip install cffi
 & pip install numpy
 & pip install -U cliff==1.15.0
+
 popd
 
 $hasPipConf = Test-Path "$env:APPDATA\pip"
@@ -284,12 +289,12 @@ $neutronConfig = (gc "$templateDir\neutron_hyperv_agent.conf").replace('[DEVSTAC
 
 Set-Content $configDir\nova.conf $novaConfig
 if ($? -eq $false){
-    Throw "Error writting $templateDir\nova.conf"
+    Throw "Error writting $configDir\nova.conf"
 }
 
 Set-Content $configDir\neutron_hyperv_agent.conf $neutronConfig
 if ($? -eq $false){
-    Throw "Error writting neutron_hyperv_agent.conf"
+    Throw "Error writting $configDir\neutron_hyperv_agent.conf"
 }
 
 cp "$templateDir\policy.json" "$configDir\"
@@ -297,12 +302,12 @@ cp "$templateDir\interfaces.template" "$configDir\"
 
 $hasNovaExec = Test-Path "$pythonScripts\nova-compute.exe"
 if ($hasNovaExec -eq $false){
-    Throw "No Nova-Compute exe found"
+    Throw "No nova-compute.exe found"
 }
 
 $hasNeutronExec = Test-Path "$pythonScripts\neutron-hyperv-agent.exe"
 if ($hasNeutronExec -eq $false){
-    Throw "No neutron exe found"
+    Throw "No neutron-hyperv-agent.exe found"
 }
 
 
