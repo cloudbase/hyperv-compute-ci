@@ -14,6 +14,7 @@ ssh -o "UserKnownHostsFile /dev/null" -o "StrictHostKeyChecking no" -i $DEVSTACK
 set -f
 
 run_wsmancmd_with_retry $hyperv01 $WIN_USER $WIN_PASS 'powershell -ExecutionPolicy RemoteSigned Copy-Item -Recurse C:\OpenStack\Log\* \\'$FLOATING_IP'\openstack\logs\'${hyperv01%%[.]*}'\'
+
 run_wsmancmd_with_retry $hyperv01 $WIN_USER $WIN_PASS 'systeminfo >> \\'$FLOATING_IP'\openstack\logs\'${hyperv01%%[.]*}'\systeminfo.log'
 run_wsmancmd_with_retry $hyperv01 $WIN_USER $WIN_PASS 'wmic qfe list >> \\'$FLOATING_IP'\openstack\logs\'${hyperv01%%[.]*}'\windows_hotfixes.log'
 run_wsmancmd_with_retry $hyperv01 $WIN_USER $WIN_PASS 'pip freeze >> \\'$FLOATING_IP'\openstack\logs\'${hyperv01%%[.]*}'\pip_freeze.log'
@@ -30,6 +31,7 @@ run_wsmancmd_with_retry $hyperv01 $WIN_USER $WIN_PASS 'sc qc nova-compute >> \\'
 run_wsmancmd_with_retry $hyperv01 $WIN_USER $WIN_PASS 'sc qc neutron-hyperv-agent >> \\'$FLOATING_IP'\openstack\logs\'${hyperv01%%[.]*}'\neutron_hyperv_agent_service.log'
 
 run_wsmancmd_with_retry $hyperv02 $WIN_USER $WIN_PASS 'powershell -ExecutionPolicy RemoteSigned Copy-Item -Recurse C:\OpenStack\Log\* \\'$FLOATING_IP'\openstack\logs\'${hyperv02%%[.]*}'\'
+
 run_wsmancmd_with_retry $hyperv02 $WIN_USER $WIN_PASS 'systeminfo >> \\'$FLOATING_IP'\openstack\logs\'${hyperv02%%[.]*}'\systeminfo.log'
 run_wsmancmd_with_retry $hyperv02 $WIN_USER $WIN_PASS 'wmic qfe list >> \\'$FLOATING_IP'\openstack\logs\'${hyperv02%%[.]*}'\windows_hotfixes.log'
 run_wsmancmd_with_retry $hyperv02 $WIN_USER $WIN_PASS 'pip freeze >> \\'$FLOATING_IP'\openstack\logs\'${hyperv02%%[.]*}'\pip_freeze.log'
@@ -124,7 +126,7 @@ python /home/jenkins-slave/tools/wsman.py -U https://$hyperv02:5986/wsman -u $WI
 python /home/jenkins-slave/tools/wsman.py -U https://$hyperv01:5986/wsman -u $WIN_USER -p $WIN_PASS 'powershell $targets = gwmi -ns root/microsoft/windows/storage -class msft_iscsitargetportal; Write-Host "[PRE_CLEAN] $env:computername has $targets.count" iSCSI portals'
 python /home/jenkins-slave/tools/wsman.py -U https://$hyperv02:5986/wsman -u $WIN_USER -p $WIN_PASS 'powershell $targets = gwmi -ns root/microsoft/windows/storage -class msft_iscsitargetportal; Write-Host "[PRE_CLEAN] $env:computername has $targets.count" iSCSI portals'
 
-echo `date -u +%H:%M:%S`
+echo `date -u +%H:%M:%S` "Started cleaning iSCSI targets and portals"
 nohup python /home/jenkins-slave/tools/wsman.py -U https://$hyperv01:5986/wsman -u $WIN_USER -p $WIN_PASS 'powershell $targets = gwmi -ns root/microsoft/windows/storage -class msft_iscsitarget; $ErrorActionPreference = "Continue"; $targets[0].update();' &
 pid_clean_targets_hyperv01=$!
 
@@ -143,7 +145,7 @@ wait $pid_clean_targets_hyperv02
 wait $pid_clean_portals_hyperv01
 wait $pid_clean_portals_hyperv02
 
-echo `date -u +%H:%M:%S`
+echo `date -u +%H:%M:%S` "Finished cleaning iSCSI targets and portals"
 #Checking the number of iSCSI targets and portals after clean-up
 python /home/jenkins-slave/tools/wsman.py -U https://$hyperv01:5986/wsman -u $WIN_USER -p $WIN_PASS 'powershell $targets = gwmi -ns root/microsoft/windows/storage -class msft_iscsitarget; Write-Host "[POST_CLEAN] $env:computername has $targets.count" iSCSI targets'
 python /home/jenkins-slave/tools/wsman.py -U https://$hyperv02:5986/wsman -u $WIN_USER -p $WIN_PASS 'powershell $targets = gwmi -ns root/microsoft/windows/storage -class msft_iscsitarget; Write-Host "[POST_CLEAN] $env:computername has $targets.count" iSCSI targets'

@@ -2,8 +2,6 @@ source /home/jenkins-slave/runs/devstack_params.$ZUUL_UUID.txt
 source /home/jenkins-slave/tools/keystonerc_admin
 source /usr/local/src/hyperv-compute-ci/jobs/library.sh
 
-logs_project=compute-hyperv
-
 set +e
 
 if [ "$IS_DEBUG_JOB" != "yes" ]
