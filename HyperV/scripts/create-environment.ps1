@@ -147,7 +147,7 @@ if ($buildFor -eq "openstack/compute-hyperv") {
         GitClonePull "$buildDir\os-win" "https://git.openstack.org/openstack/os-win.git" master
     }
 }
-else{
+else {
     Throw "Cannot build for project: $buildFor"
 }
 
