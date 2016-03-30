@@ -128,7 +128,7 @@ if ($isDebug -eq  'yes') {
     Get-ChildItem $buildDir
 }
 
-if ($buildFor -eq "openstack/compute-hyperv"){
+if ($buildFor -eq "openstack/compute-hyperv") {
     ExecRetry {
         GitClonePull "$buildDir\neutron" "https://git.openstack.org/openstack/neutron.git" $branchName
     }
@@ -142,10 +142,12 @@ if ($buildFor -eq "openstack/compute-hyperv"){
         else {
             GitClonePull "$buildDir\networking-hyperv" "https://git.openstack.org/openstack/networking-hyperv.git" $branchName
         }
+    }
     ExecRetry {
         GitClonePull "$buildDir\os-win" "https://git.openstack.org/openstack/os-win.git" master
     }
-}else{
+}
+else{
     Throw "Cannot build for project: $buildFor"
 }
 
