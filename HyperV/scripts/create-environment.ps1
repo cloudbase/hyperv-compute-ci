@@ -189,7 +189,6 @@ Add-Content "$env:APPDATA\pip\pip.ini" $pip_conf_content
 & pip install -U --pre PyMI
 & pip install cffi
 & pip install numpy
-& pip install oslo.messaging==4.5.0
 
 popd
 
