@@ -136,8 +136,12 @@ if ($buildFor -eq "openstack/compute-hyperv"){
         GitClonePull "$buildDir\nova" "https://git.openstack.org/openstack/nova.git" $branchName
     }
     ExecRetry {
-        GitClonePull "$buildDir\networking-hyperv" "https://git.openstack.org/openstack/networking-hyperv.git" $branchName
-    }
+        if (($branchName.ToLower().CompareTo($('stable/mitaka').ToLower()) -eq 0)) {
+            GitClonePull "$buildDir\networking-hyperv" "https://git.openstack.org/openstack/networking-hyperv.git" "master"
+        }
+        else {
+            GitClonePull "$buildDir\networking-hyperv" "https://git.openstack.org/openstack/networking-hyperv.git" $branchName
+        }
     ExecRetry {
         GitClonePull "$buildDir\os-win" "https://git.openstack.org/openstack/os-win.git" master
     }
