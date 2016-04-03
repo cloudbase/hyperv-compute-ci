@@ -57,7 +57,7 @@ export VMID=$VMID
 echo VMID=$VMID >>  /home/jenkins-slave/runs/devstack_params.$ZUUL_UUID.txt
 echo VMID=$VMID
 
-if [ $? -ne 0 ]; then
+if [ NOVABOOT_EXIT -ne 0 ]; then
     echo "Failed to create devstack VM: $VMID"
     nova show "$VMID"
     exit 1
