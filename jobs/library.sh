@@ -76,7 +76,7 @@ function run_ssh_cmd_with_retry () {
     local CMD=$3
     local INTERVAL=$4
     local MAX_RETRIES=10
-    lcoal COUNTER=0
+    local COUNTER=0
 
     while [ $COUNTER -lt $MAX_RETRIES ]; do
         EXIT=0
