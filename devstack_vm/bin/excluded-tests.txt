@@ -1,5 +1,5 @@
 # See Tempest bug: https://bugs.launchpad.net/tempest/+bug/1363986
-tempest.scenario.test_security_groups_basic_ops.TestSecurityGroupsBasicOps.test_cross_tenant_traffic
+tempest.scenario.test_security_groups_basic_ops.TestSecurityGroupsBasicOps
 
 # Fails on DevStack. Not related to Hyper-V
 tempest.scenario.test_load_balancer_basic.TestLoadBalancerBasic.test_load_balancer_basic
@@ -52,11 +52,7 @@ tempest.scenario.test_network_advanced_server_ops.TestNetworkAdvancedServerOps.t
 tempest.scenario.test_network_advanced_server_ops.TestNetworkAdvancedServerOps.test_server_connectivity_stop_start
 tempest.scenario.test_network_basic_ops.TestNetworkBasicOps
 tempest.scenario.test_network_v6.TestGettingAddress
-tempest.scenario.test_security_groups_basic_ops.TestSecurityGroupsBasicOps
 
 #Need investigation - were failing on cinder ci as well
 tempest.scenario.test_volume_boot_pattern.TestVolumeBootPattern.test_volume_boot_pattern
 tempest.scenario.test_volume_boot_pattern.TestVolumeBootPatternV2.test_volume_boot_pattern
-
-#Fails dues to "_migrate_server_to() takes exactly 4 arguments (3 given)" Feb 29 2016
-tempest.api.compute.admin.test_live_migration.LiveBlockMigrationTestJSON.test_iscsi_volume
