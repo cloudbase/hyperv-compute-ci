@@ -139,8 +139,11 @@ if ($buildFor -eq "openstack/compute-hyperv") {
     ExecRetry {
         GitClonePull "$buildDir\networking-hyperv" "https://git.openstack.org/openstack/networking-hyperv.git" $branchName
     }
-    ExecRetry {
-        GitClonePull "$buildDir\os-win" "https://git.openstack.org/openstack/os-win.git" master
+    if (@("stable/mitaka", "master") -contains $branchName.ToLower()) {
+        ExecRetry {
+            # os-win only exists on stable/mitaka and master.
+            GitClonePull "$buildDir\os-win" "https://git.openstack.org/openstack/os-win.git" $branchName
+        }
     }
 }
 else {
@@ -233,8 +236,8 @@ ExecRetry {
         Get-ChildItem $buildDir\os-win
     }
     pushd $buildDir\os-win
-    if ($branchName.ToLower().CompareTo('master') -eq 0) {
-        # only install os-win on master.
+    if (@("stable/mitaka", "master") -contains $branchName.ToLower()) {
+        # only install os-win on stable/mitaka or master.
         & pip install $buildDir\os-win
     }
     if ($LastExitCode) { Throw "Failed to install os-win fom repo" }
