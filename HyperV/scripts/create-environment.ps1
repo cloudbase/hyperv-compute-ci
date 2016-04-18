@@ -232,20 +232,6 @@ if ($isDebug -eq  'yes') {
 
 ExecRetry {
     if ($isDebug -eq  'yes') {
-        Write-Host "Content of $buildDir\os-win"
-        Get-ChildItem $buildDir\os-win
-    }
-    pushd $buildDir\os-win
-    if (@("stable/mitaka", "master") -contains $branchName.ToLower()) {
-        # only install os-win on stable/mitaka or master.
-        & pip install $buildDir\os-win
-    }
-    if ($LastExitCode) { Throw "Failed to install os-win fom repo" }
-    popd
-}
-
-ExecRetry {
-    if ($isDebug -eq  'yes') {
         Write-Host "Content of $buildDir\neutron"
         Get-ChildItem $buildDir\neutron
     }
@@ -285,6 +271,20 @@ ExecRetry {
     pushd $buildDir\compute-hyperv
     & pip install $buildDir\compute-hyperv    
     if ($LastExitCode) { Throw "Failed to install Hyperv-Compute fom repo" }
+    popd
+}
+
+ExecRetry {
+    if ($isDebug -eq  'yes') {
+        Write-Host "Content of $buildDir\os-win"
+        Get-ChildItem $buildDir\os-win
+    }
+    pushd $buildDir\os-win
+    if (@("stable/mitaka", "master") -contains $branchName.ToLower()) {
+        # only install os-win on stable/mitaka or master.
+        & pip install $buildDir\os-win
+    }
+    if ($LastExitCode) { Throw "Failed to install os-win fom repo" }
     popd
 }
 
