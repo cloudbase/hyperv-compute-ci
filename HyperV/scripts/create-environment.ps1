@@ -289,7 +289,13 @@ ExecRetry {
     popd
 }
 
-$novaConfig = (gc "$templateDir\nova.conf").replace('[DEVSTACK_IP]', "$devstackIP").Replace('[LOGDIR]', "$openstackLogs").Replace('[RABBITUSER]', $rabbitUser)
+$computeDriver = 'hyperv.nova.driver.HyperVDriver'
+if (@(master") -contains $branchName.ToLower()) {
+    # from Newton onwards, the compute driver changed to this.
+    $computeDriver = 'compute_hyperv.driver.HyperVDriver'
+}
+
+$novaConfig = (gc "$templateDir\nova.conf").replace('[DEVSTACK_IP]', "$devstackIP").Replace('[LOGDIR]', "$openstackLogs").Replace('[RABBITUSER]', $rabbitUser).Replace('[COMPUTE_DRIVER]', $computeDriver)
 $neutronConfig = (gc "$templateDir\neutron_hyperv_agent.conf").replace('[DEVSTACK_IP]', "$devstackIP").Replace('[LOGDIR]', "$openstackLogs").Replace('[RABBITUSER]', $rabbitUser)
 
 Set-Content $configDir\nova.conf $novaConfig
