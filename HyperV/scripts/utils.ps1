@@ -79,6 +79,19 @@ function GitClonePull($path, $url, $branch="master")
 }
 
 
+function cherry_pick($commit) {
+
+    $eapSet = $ErrorActionPreference
+    $ErrorActionPreference = "Continue"
+    git cherry-pick $commit
+
+    if ($LastExitCode) {
+        echo "Ignoring failed git cherry-pick $commit"
+        git checkout --force
+    }
+    $ErrorActionPreference = $eapSet
+}
+
 function dumpeventlog($path){
 	
 	Get-Eventlog -list | Where-Object { $_.Entries -ne '0' } | ForEach-Object {

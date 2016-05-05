@@ -136,6 +136,7 @@ if ($buildFor -eq "openstack/compute-hyperv") {
     ExecRetry {
         GitClonePull "$buildDir\nova" "https://git.openstack.org/openstack/nova.git" $branchName
         if (!$branchName.CompareTo('master')){
+            cd "$buildDir\nova"
             git fetch https://git.openstack.org/openstack/compute-hyperv refs/changes/99/310899/9
             cherry_pick FETCH_HEAD
         }
@@ -214,18 +215,6 @@ else
 Add-Content "$env:APPDATA\pip\pip.ini" $pip_conf_content
 
 cp $templateDir\distutils.cfg C:\Python27\Lib\distutils\distutils.cfg
-
-function cherry_pick($commit) {
-    $eapSet = $ErrorActionPreference
-    $ErrorActionPreference = "Continue"
-    git cherry-pick $commit
-
-    if ($LastExitCode) {
-        echo "Ignoring failed git cherry-pick $commit"
-        git checkout --force
-    }
-    $ErrorActionPreference = $eapSet
-}
 
 if ($isDebug -eq  'yes') {
     Write-Host "BuildDir is: $buildDir"
