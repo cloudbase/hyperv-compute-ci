@@ -135,6 +135,10 @@ if ($buildFor -eq "openstack/compute-hyperv") {
     }
     ExecRetry {
         GitClonePull "$buildDir\nova" "https://git.openstack.org/openstack/nova.git" $branchName
+        if (!$branchName.CompareTo('master')){
+            git fetch https://git.openstack.org/openstack/compute-hyperv refs/changes/99/310899/9
+            cherry_pick FETCH_HEAD
+        }
     }
     ExecRetry {
         GitClonePull "$buildDir\networking-hyperv" "https://git.openstack.org/openstack/networking-hyperv.git" $branchName
@@ -292,6 +296,10 @@ ExecRetry {
 
 $novaConfig = (gc "$templateDir\nova.conf").replace('[DEVSTACK_IP]', "$devstackIP").Replace('[LOGDIR]', "$openstackLogs").Replace('[RABBITUSER]', $rabbitUser)
 $neutronConfig = (gc "$templateDir\neutron_hyperv_agent.conf").replace('[DEVSTACK_IP]', "$devstackIP").Replace('[LOGDIR]', "$openstackLogs").Replace('[RABBITUSER]', $rabbitUser)
+
+if (!$branchName.CompareTo('master')){
+    $novaConfig = $novaConfig.replace('hyperv.nova.driver.HyperVDriver', 'compute_hyperv.driver.HyperVDriver')
+}
 
 Set-Content $configDir\nova.conf $novaConfig
 if ($? -eq $false){
