@@ -135,11 +135,6 @@ if ($buildFor -eq "openstack/compute-hyperv") {
     }
     ExecRetry {
         GitClonePull "$buildDir\nova" "https://git.openstack.org/openstack/nova.git" $branchName
-        if (!$branchName.CompareTo('master')){
-            cd "$buildDir\nova"
-            git fetch https://git.openstack.org/openstack/compute-hyperv refs/changes/99/310899/9
-            cherry_pick FETCH_HEAD
-        }
     }
     ExecRetry {
         GitClonePull "$buildDir\networking-hyperv" "https://git.openstack.org/openstack/networking-hyperv.git" $branchName
@@ -264,6 +259,10 @@ ExecRetry {
         Get-ChildItem $buildDir\compute-hyperv
     }
     pushd $buildDir\compute-hyperv
+    if (!$branchName.CompareTo('master')){
+        git fetch https://git.openstack.org/openstack/compute-hyperv refs/changes/99/310899/9
+        cherry_pick FETCH_HEAD
+    }
     & pip install $buildDir\compute-hyperv    
     if ($LastExitCode) { Throw "Failed to install Hyperv-Compute fom repo" }
     popd
