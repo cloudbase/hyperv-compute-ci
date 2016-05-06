@@ -135,6 +135,13 @@ function exporthtmleventlog($path){
 		$bkup = Join-Path $path $logName
 		$Report = $Report | Set-Content $bkup
 	}
+	$rep = Get-WinEvent -FilterHashtable @{LogName="Microsoft-Windows-Hyper-V*"}
+	$rep = $rep | ConvertTo-Html -Title "Hyper-V" -Head $HTMLHeader -As Table
+ 	$rep = $rep | ForEach-Object {$_ -replace "<body>", '<body id="body">'}
+	$rep = $rep | ForEach-Object {$_ -replace "<table>", '<table class="sortable" id="table" cellspacing="0">'}
+	$logName = "eventlog_hyperv.html"
+	$bkup = Join-Path $path $logName
+	$rep = $rep | Set-Content $bkup
 }
 
 function cleareventlog(){
