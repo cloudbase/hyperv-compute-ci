@@ -260,10 +260,10 @@ ExecRetry {
     }
     pushd $buildDir\compute-hyperv
     if (!$branchName.CompareTo('master')){
-        git fetch https://git.openstack.org/openstack/compute-hyperv refs/changes/99/310899/9
+        git fetch https://git.openstack.org/openstack/compute-hyperv refs/changes/99/310899/10
         cherry_pick FETCH_HEAD
     }
-    & pip install $buildDir\compute-hyperv    
+    & pip install -e $buildDir\compute-hyperv
     if ($LastExitCode) { Throw "Failed to install Hyperv-Compute fom repo" }
     popd
 }
