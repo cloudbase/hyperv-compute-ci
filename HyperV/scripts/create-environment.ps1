@@ -258,7 +258,15 @@ ExecRetry {
         Get-ChildItem $buildDir\compute-hyperv
     }
     pushd $buildDir\compute-hyperv
-    & pip install -e $buildDir\compute-hyperv
+    if (!$branchName.CompareTo('master')) {
+        # We have to install compute-hyperv in editable mode in this case.
+        # Note that this will not work for stable releases.
+        # In the future, this will have to be fixed within compute-hyperv.
+        & pip install -e $buildDir\compute-hyperv
+    }
+    else {
+        & pip install $buildDir\compute-hyperv
+    }
     if ($LastExitCode) { Throw "Failed to install Hyperv-Compute fom repo" }
     popd
 }
