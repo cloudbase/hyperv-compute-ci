@@ -25,10 +25,10 @@ neutron subnet-update $subnet_id --dns_nameservers list=true 8.8.8.8 8.8.4.4
 
 echo "Neutron networks:"
 neutron net-list
-for net in `neutron net-list | grep -v '\-\-' | grep -v "subnets" | awk {'print $2'}`; do neutron net-show $net; done
+for net in `neutron net-list -F name | grep -v '\-\-' | grep -v "name" | awk {'print $2'}`; do neutron net-show $net;done
 echo "Neutron subnetworks:"
 neutron subnet-list
-for subnet in `neutron subnet-list | grep start | awk {'print $2'}`; do neutron subnet-show $subnet; done
+for subnet in `neutron subnet-list -F name | grep -v '\-\-' | grep -v "name" | awk {'print $2'}`; do neutron subnet-show $subnet; done
 
 TEMPEST_CONFIG=/opt/stack/tempest/etc/tempest.conf
 
