@@ -20,7 +20,7 @@ echo "After updating nova flavors:"
 nova flavor-list
 
 # Add DNS config to the private network
-subnet_id=`neutron net-show private | grep -A1 subnets | tail -1 | awk '{print $3}'`
+subnet_id=`neutron subnet-show private-subnet | grep ' id ' | awk '{print $4}'`
 neutron subnet-update $subnet_id --dns_nameservers list=true 8.8.8.8 8.8.4.4
 
 echo "Neutron networks:"
