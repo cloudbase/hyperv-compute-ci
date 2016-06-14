@@ -3,6 +3,9 @@
 basedir=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 . $basedir/config.sh
 
+DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
+DIR=$( dirname "$DIR" )
+
 project_name=$(basename $project)
 
 mkdir -p $TEMPEST_DIR
@@ -34,7 +37,7 @@ $basedir/parallel-test-runner.sh $tests_file $tests_dir $log_file \
 
 rm $tests_file
 
-isolated_tests_list_file=$basedir/isolated-tests.txt
+isolated_tests_list_file=$DIR/testsLists/isolated-tests.txt
 if [ -f "$isolated_tests_list_file" ]; then
     echo "Running isolated tests from: $isolated_tests_list_file"
     isolated_tests_file=$(tempfile)

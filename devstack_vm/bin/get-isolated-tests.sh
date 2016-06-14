@@ -2,6 +2,7 @@
 set -e
 
 DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
+DIR=$( dirname "$DIR" )
 
 array_to_regex()
 {
@@ -20,8 +21,8 @@ array_to_regex()
 
 tests_dir=$1
 
-exclude_tests_file="$DIR/excluded-tests.txt"
-isolated_tests_file="$DIR/isolated-tests.txt"
+exclude_tests_file="$DIR/testLists/excluded-tests.txt"
+isolated_tests_file="$DIR/testLists/isolated-tests.txt"
 
 if [ -f "$exclude_tests_file" ]; then
     exclude_tests=(`awk 'NF && $1!~/^#/' $exclude_tests_file`)
