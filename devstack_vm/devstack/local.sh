@@ -8,7 +8,7 @@ echo "Before updating nova flavors:"
 nova flavor-list
 
 nova flavor-delete 42
-nova flavor-create m1.nano 42 96 1 1
+nova flavor-create m1.nano 42 128 1 1
 
 nova flavor-delete 84
 nova flavor-create m1.micro 84 128 2 1
