@@ -42,6 +42,8 @@ Write-Host "Ensuring nova-compute and neutron services are stopped."
 Stop-Service -Name nova-compute -Force
 Stop-Service -Name neutron-hyperv-agent -Force
 
+destroy_planned_vms
+
 Write-Host "Stopping any possible python processes left."
 Stop-Process -Name python -Force
 
