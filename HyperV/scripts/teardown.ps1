@@ -1,9 +1,7 @@
-# Loading config
-
-. "C:\OpenStack\hyperv-compute-ci\HyperV\scripts\config.ps1"
-. "C:\OpenStack\hyperv-compute-ci\HyperV\scripts\utils.ps1"
-
-# end Loading config
+$scriptLocation = [System.IO.Path]::GetDirectoryName($myInvocation.MyCommand.Definition)
+. "$scriptLocation\utils.ps1"		  . "$scriptLocation\utils.ps1"
+. "$scriptLocation\config.ps1"		  . "$scriptLocation\config.ps1"
+. "$scriptLocation\iscsi_utils.ps1"
 
 $ErrorActionPreference = "SilentlyContinue"
 
@@ -50,6 +48,12 @@ if ($(Get-Service neutron-hyperv-agent).Status -ne "Stopped"){
 Write-Host "Clearing any VMs that might have been left."
 Get-VM | where {$_.State -eq 'Running' -or $_.State -eq 'Paused'} | Stop-Vm -Force
 Remove-VM * -Force
+
+Write-Host "Cleaning up iSCSI targets."
+cleanup_iscsi_targets
+
+Write-Host "Cleaning up planned VMs."
+destroy_planned_vms
 
 Write-Host "Cleaning the build folder."
 Remove-Item -Recurse -Force $buildDir\*
