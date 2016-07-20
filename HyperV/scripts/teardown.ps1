@@ -1,6 +1,6 @@
 $scriptLocation = [System.IO.Path]::GetDirectoryName($myInvocation.MyCommand.Definition)
-. "$scriptLocation\utils.ps1"		  . "$scriptLocation\utils.ps1"
-. "$scriptLocation\config.ps1"		  . "$scriptLocation\config.ps1"
+. "$scriptLocation\utils.ps1"
+. "$scriptLocation\config.ps1"
 . "$scriptLocation\iscsi_utils.ps1"
 
 $ErrorActionPreference = "SilentlyContinue"
