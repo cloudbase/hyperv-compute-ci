@@ -149,3 +149,7 @@ function cleareventlog(){
 		Clear-Eventlog $_.LogDisplayName -ErrorAction SilentlyContinue
 	}
 }
+
+function log_message($message){
+    echo "[$(Get-Date)] $message"
+}
