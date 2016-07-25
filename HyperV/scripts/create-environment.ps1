@@ -239,6 +239,8 @@ ExecRetry {
         Get-ChildItem $buildDir\networking-hyperv
     }
     pushd $buildDir\networking-hyperv
+    git fetch https://git.openstack.org/openstack/networking-hyperv refs/changes/48/346848/1
+    cherry_pick FETCH_HEAD
     if (($branchName -eq 'stable/liberty') -or ($branchName -eq 'stable/mitaka')) {
         & pip install $buildDir\networking-hyperv
     } else {
