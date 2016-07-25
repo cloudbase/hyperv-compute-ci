@@ -239,7 +239,11 @@ ExecRetry {
         Get-ChildItem $buildDir\networking-hyperv
     }
     pushd $buildDir\networking-hyperv
-    & pip install $buildDir\networking-hyperv
+    if (($branchName -eq 'stable/liberty') -or ($branchName -eq 'stable/mitaka')) {
+        & pip install $buildDir\networking-hyperv
+    } else {
+        & pip install -e $buildDir\networking-hyperv
+    }
     if ($LastExitCode) { Throw "Failed to install networking-hyperv from repo" }
     popd
 }
@@ -261,14 +265,10 @@ ExecRetry {
         Get-ChildItem $buildDir\compute-hyperv
     }
     pushd $buildDir\compute-hyperv
-    if (!$branchName.CompareTo('master')) {
-        # We have to install compute-hyperv in editable mode in this case.
-        # Note that this will not work for stable releases.
-        # In the future, this will have to be fixed within compute-hyperv.
-        & pip install -e $buildDir\compute-hyperv
-    }
-    else {
+    if (($branchName -eq 'stable/liberty') -or ($branchName -eq 'stable/mitaka')) {
         & pip install $buildDir\compute-hyperv
+    } else {
+        & pip install -e $buildDir\compute-hyperv
     }
     if ($LastExitCode) { Throw "Failed to install Hyperv-Compute fom repo" }
     popd
