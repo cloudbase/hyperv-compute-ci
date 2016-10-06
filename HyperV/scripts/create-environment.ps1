@@ -27,6 +27,7 @@ $hasConfigDir = Test-Path $configDir
 $hasBinDir = Test-Path $binDir
 $hasMkisoFs = Test-Path $binDir\mkisofs.exe
 $hasQemuImg = Test-Path $binDir\qemu-img.exe
+$OSWIN_STABLE_RELEASES=@("stable/mitaka","stable/newton", "master")
 
 $pip_conf_content = @"
 [global]
@@ -141,7 +142,7 @@ if ($buildFor -eq "openstack/compute-hyperv") {
     ExecRetry {
         GitClonePull "$buildDir\networking-hyperv" "https://git.openstack.org/openstack/networking-hyperv.git" $branchName
     }
-    if (@("stable/mitaka", "master") -contains $branchName.ToLower()) {
+    if ($OSWIN_STABLE_RELEASES -contains $branchName.ToLower()) {
         ExecRetry {
             # os-win only exists on stable/mitaka and master.
             GitClonePull "$buildDir\os-win" "https://git.openstack.org/openstack/os-win.git" $branchName
@@ -289,7 +290,7 @@ ExecRetry {
         Get-ChildItem $buildDir\os-win
     }
     pushd $buildDir\os-win
-    if (@("stable/mitaka", "master") -contains $branchName.ToLower()) {
+    if ($OSWIN_STABLE_RELEASES -contains $branchName.ToLower()) {
         # only install os-win on stable/mitaka or master.
         & pip install $buildDir\os-win
     }
