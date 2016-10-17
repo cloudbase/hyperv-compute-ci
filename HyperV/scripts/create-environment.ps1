@@ -27,6 +27,7 @@ $hasConfigDir = Test-Path $configDir
 $hasBinDir = Test-Path $binDir
 $hasMkisoFs = Test-Path $binDir\mkisofs.exe
 $hasQemuImg = Test-Path $binDir\qemu-img.exe
+Add-Type -AssemblyName System.IO.Compression.FileSystem
 
 $pip_conf_content = @"
 [global]
@@ -105,14 +106,8 @@ if ($hasBinDir -eq $false){
 
 if (($hasMkisoFs -eq $false) -or ($hasQemuImg -eq $false)){
     Invoke-WebRequest -Uri "http://10.0.110.1/openstack_bin.zip" -OutFile "$bindir\openstack_bin.zip"
-    if (Test-Path "$7zExec"){
-        pushd $bindir
-        & $7zExec x -y "$bindir\openstack_bin.zip"
-        Remove-Item -Force "$bindir\openstack_bin.zip"
-        popd
-    } else {
-        Throw "Required binary files (mkisofs, qemuimg etc.)  are missing"
-    }
+    [System.IO.Compression.ZipFile]::ExtractToDirectory("$bindir\openstack_bin.zip", "$bindir")
+    Remove-Item -Force "$bindir\openstack_bin.zip"
 }
 
 if ($hasNovaTemplate -eq $false){
@@ -167,19 +162,15 @@ if (Test-Path $pythonArchive)
 {
     Remove-Item -Force $pythonArchive
 }
-Invoke-WebRequest -Uri http://10.0.110.1/python27new.tar.gz -OutFile $pythonArchive
-if (Test-Path $pythonTar)
-{
-    Remove-Item -Force $pythonTar
-}
+Invoke-WebRequest -Uri http://10.0.110.1/python.zip -OutFile $pythonArchive
+
 if (Test-Path $pythonDir)
 {
     Remove-Item -Recurse -Force $pythonDir
 }
 Write-Host "Ensure Python folder is up to date"
 Write-Host "Extracting archive.."
-& $7zExec x -y "$pythonArchive"
-& $7zExec x -y "$pythonTar"
+[System.IO.Compression.ZipFile]::ExtractToDirectory("C:\$pythonArchive", "C:\")
 
 $hasPipConf = Test-Path "$env:APPDATA\pip"
 if ($hasPipConf -eq $false){
