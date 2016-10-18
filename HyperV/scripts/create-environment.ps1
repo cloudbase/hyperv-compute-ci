@@ -280,8 +280,8 @@ ExecRetry {
         Get-ChildItem $buildDir\os-win
     }
     pushd $buildDir\os-win
-    if (@("stable/mitaka", "master") -contains $branchName.ToLower()) {
-        # only install os-win on stable/mitaka or master.
+    if (@("stable/mitaka", "stable/newton", "master") -contains $branchName.ToLower()) {
+        # only install os-win on stable/mitaka, stable/newton, or master.
         & pip install $buildDir\os-win
     }
     if ($LastExitCode) { Throw "Failed to install os-win fom repo" }
@@ -293,7 +293,7 @@ $cores_count = $cpu_array.count * $cpu_array[0].NumberOfCores
 $novaConfig = (gc "$templateDir\nova.conf").replace('[DEVSTACK_IP]', "$devstackIP").Replace('[LOGDIR]', "$openstackLogs").Replace('[RABBITUSER]', $rabbitUser)
 $neutronConfig = (gc "$templateDir\neutron_hyperv_agent.conf").replace('[DEVSTACK_IP]', "$devstackIP").Replace('[LOGDIR]', "$openstackLogs").Replace('[RABBITUSER]', $rabbitUser).replace('[CORES_COUNT]', "$cores_count")
 
-if (!$branchName.CompareTo('master')){
+if (@("stable/newton", "master") -contains $branchName.ToLower()) {
     $novaConfig = $novaConfig.replace('hyperv.nova.driver.HyperVDriver', 'compute_hyperv.driver.HyperVDriver')
 }
 
