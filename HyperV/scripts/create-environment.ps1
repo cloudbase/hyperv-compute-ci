@@ -136,7 +136,7 @@ if ($buildFor -eq "openstack/compute-hyperv") {
     ExecRetry {
         GitClonePull "$buildDir\networking-hyperv" "https://git.openstack.org/openstack/networking-hyperv.git" $branchName
     }
-    if (@("stable/mitaka", "master") -contains $branchName.ToLower()) {
+    if (@("stable/newton", "stable/mitaka", "master") -contains $branchName.ToLower()) {
         ExecRetry {
             # os-win only exists on stable/mitaka and master.
             GitClonePull "$buildDir\os-win" "https://git.openstack.org/openstack/os-win.git" $branchName
