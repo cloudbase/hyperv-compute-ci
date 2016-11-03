@@ -145,8 +145,8 @@ if ($buildFor -eq "openstack/compute-hyperv") {
             GitClonePull "$buildDir\os-win" "https://git.openstack.org/openstack/os-win.git" $branchName
         }
     }
+    Get-ChildItem $buildDir
 }
-Get-ChildItem $buildDir
 
 else {
     Throw "Cannot build for project: $buildFor"
