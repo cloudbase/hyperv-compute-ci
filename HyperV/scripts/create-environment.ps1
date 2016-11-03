@@ -136,6 +136,9 @@ if ($buildFor -eq "openstack/compute-hyperv") {
     ExecRetry {
         GitClonePull "$buildDir\networking-hyperv" "https://git.openstack.org/openstack/networking-hyperv.git" $branchName
     }
+    ExecRetry {
+        GitClonePull "$buildDir\requirements" "https://git.openstack.org/openstack/requirements.git" $branchName
+    }
     if (@("stable/newton", "stable/mitaka", "master") -contains $branchName.ToLower()) {
         ExecRetry {
             # os-win only exists on stable/mitaka and master.
@@ -143,6 +146,8 @@ if ($buildFor -eq "openstack/compute-hyperv") {
         }
     }
 }
+Get-ChildItem $buildDir
+
 else {
     Throw "Cannot build for project: $buildFor"
 }
@@ -213,12 +218,23 @@ if ($isDebug -eq  'yes') {
 }
 
 ExecRetry {
+    pushd "$buildDir\requirements"
+    Write-Host "Installing OpenStack/Requirements..."
+    & pip install -c upper-constraints.txt -U pbr virtualenv httplib2 prettytable>=0.7 setuptools
+    & pip install -c upper-constraints.txt -U .
+    if ($LastExitCode) { Throw "Failed to install openstack/requirements from repo" }
+    popd
+}
+
+ExecRetry {
     if ($isDebug -eq  'yes') {
         Write-Host "Content of $buildDir\neutron"
         Get-ChildItem $buildDir\neutron
     }
     pushd $buildDir\neutron
-    & pip install $buildDir\neutron
+    Write-Host "Installing openstack/neutron..."
+    & update-requirements.exe --source $buildDir\requirements .
+    & pip install -c $buildDir\requirements\upper-constraints.txt -U .
     if ($LastExitCode) { Throw "Failed to install neutron from repo" }
     popd
 }
@@ -229,10 +245,10 @@ ExecRetry {
         Get-ChildItem $buildDir\networking-hyperv
     }
     pushd $buildDir\networking-hyperv
-    git fetch https://git.openstack.org/openstack/networking-hyperv refs/changes/48/346848/1
-    cherry_pick FETCH_HEAD
+    Write-Host "Installing openstack/networking-hyperv..."
+    & update-requirements.exe --source $buildDir\requirements .
     if (($branchName -eq 'stable/liberty') -or ($branchName -eq 'stable/mitaka')) {
-        & pip install $buildDir\networking-hyperv
+        & pip install -c $buildDir\requirements\upper-constraints.txt -U .
     } else {
         & pip install -e $buildDir\networking-hyperv
     }
@@ -246,12 +262,9 @@ ExecRetry {
         Get-ChildItem $buildDir\nova
     }
     pushd $buildDir\nova
-    if ($branchName -eq 'master') {
-        # This patch fixes deadlock on shelve instances
-        git fetch https://git.openstack.org/openstack/nova refs/changes/37/352837/1
-        cherry_pick FETCH_HEAD
-    }
-    & pip install $buildDir\nova
+    Write-Host "Installing openstack/nova..."
+    & update-requirements.exe --source $buildDir\requirements .
+    & pip install -c $buildDir\requirements\upper-constraints.txt -U .
     if ($LastExitCode) { Throw "Failed to install nova fom repo" }
     popd
 }
@@ -262,12 +275,11 @@ ExecRetry {
         Get-ChildItem $buildDir\compute-hyperv
     }
     pushd $buildDir\compute-hyperv
+    Write-Host "Installing openstack/compute-hyperv..."
+    & update-requirements.exe --source $buildDir\requirements .
     if (($branchName -eq 'stable/liberty') -or ($branchName -eq 'stable/mitaka')) {
-        & pip install $buildDir\compute-hyperv
+        & pip install -c $buildDir\requirements\upper-constraints.txt -U .
     } else {
-        # This patch fixes deadlock on shelve instances
-        git fetch https://git.openstack.org/openstack/compute-hyperv refs/changes/41/352841/1
-        cherry_pick FETCH_HEAD
         & pip install -e $buildDir\compute-hyperv
     }
     if ($LastExitCode) { Throw "Failed to install Hyperv-Compute fom repo" }
@@ -280,9 +292,11 @@ ExecRetry {
         Get-ChildItem $buildDir\os-win
     }
     pushd $buildDir\os-win
+    Write-Host "Installing openstack/os-win..."
+    & update-requirements.exe --source $buildDir\requirements .
     if (@("stable/mitaka", "stable/newton", "master") -contains $branchName.ToLower()) {
         # only install os-win on stable/mitaka, stable/newton, or master.
-        & pip install $buildDir\os-win
+        & pip install -c $buildDir\requirements\upper-constraints.txt -U .
     }
     if ($LastExitCode) { Throw "Failed to install os-win fom repo" }
     popd
