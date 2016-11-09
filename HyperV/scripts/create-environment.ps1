@@ -296,7 +296,7 @@ ExecRetry {
     & update-requirements.exe --source $buildDir\requirements .
     if (@("stable/mitaka", "stable/newton", "master") -contains $branchName.ToLower()) {
         # only install os-win on stable/mitaka, stable/newton, or master.
-        & pip install -c $buildDir\requirements\upper-constraints.txt -U .
+        & pip install .
     }
     if ($LastExitCode) { Throw "Failed to install os-win fom repo" }
     popd
