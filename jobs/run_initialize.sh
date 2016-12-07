@@ -29,7 +29,7 @@ if [[ ! -z $IS_DEBUG_JOB ]] && [[ $IS_DEBUG_JOB == "yes" ]]; then
         NAME="$NAME-dbg"
 fi
 export NAME=$NAME
-
+echo ZUUL_BRANCH=$ZUUL_BRANCH | tee -a /home/jenkins-slave/runs/devstack_params.$ZUUL_UUID.txt
 echo NAME=$NAME >> /home/jenkins-slave/runs/devstack_params.$ZUUL_UUID.txt
 
 NET_ID=$(nova net-list | grep private| awk '{print $2}')
