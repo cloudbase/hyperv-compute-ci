@@ -292,6 +292,11 @@ ExecRetry {
         Get-ChildItem $buildDir\os-win
     }
     pushd $buildDir\os-win
+    
+    # Fixes VHD/x info retrieval issue by avoiding opening parents when fetching VHD info
+    git fetch git://git.openstack.org/openstack/os-win refs/changes/18/408718/2
+    cherry_pick FETCH_HEAD
+
     Write-Host "Installing openstack/os-win..."
     & update-requirements.exe --source $buildDir\requirements .
     if (@("stable/mitaka", "stable/newton", "master") -contains $branchName.ToLower()) {
