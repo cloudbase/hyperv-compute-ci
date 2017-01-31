@@ -1,8 +1,5 @@
 #!/bin/bash
 
-basedir=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
-. $basedir/utils.sh
-
 # Make sure we kill the entire process tree when exiting
 trap 'kill 0' SIGINT SIGTERM
 
@@ -86,14 +83,14 @@ function parallel_test_runner() {
 
         local tmp_log_file="$tmp_log_file_base"_"$range_start"
 
-        echo `timestamp` "Test runner $runner_id is starting tests from $((range_start+1)) to $((range_end+1)) out of ${#tests[@]}:"
+        echo "Test runner $runner_id is starting tests from $((range_start+1)) to $((range_end+1)) out of ${#tests[@]}:"
         cat $tmp_tests_file
         echo
 
         local test_exit_code=$(run_test_retry $tmp_tests_file $tmp_log_file)
         rm $tmp_tests_file
 
-        echo `timestamp` "Test runner $runner_id finished tests from $((range_start+1)) to $((range_end+1)) out of ${#tests[@]} with exit code: $test_exit_code"
+        echo "Test runner $runner_id finished tests from $((range_start+1)) to $((range_end+1)) out of ${#tests[@]} with exit code: $test_exit_code"
     done
 }
 
@@ -137,7 +134,7 @@ done
 rm $tmp_log_file_base
 rm $lock_file_1
 
-echo `timestamp` "Test execution completed in $SECONDS seconds."
+echo "Test execution completed in $SECONDS seconds."
 
 subunit-stats $log_file > /dev/null
 exit $?
