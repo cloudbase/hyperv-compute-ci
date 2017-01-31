@@ -2,10 +2,12 @@
 #
 hyperv_node=$1
 # Loading all the needed functions
-source /usr/local/src/hyperv-compute-ci/jobs/library.sh
+source /usr/local/src/hyperv-compute-ci-2016/jobs/library.sh
 
 # Loading parameters
 source /home/jenkins-slave/runs/devstack_params.$ZUUL_UUID.txt
+
+export LOG_DIR='C:\Openstack\logs\'
 
 # building HyperV node
 echo $hyperv_node

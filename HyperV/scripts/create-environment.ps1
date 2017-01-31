@@ -31,9 +31,9 @@ Add-Type -AssemblyName System.IO.Compression.FileSystem
 
 $pip_conf_content = @"
 [global]
-index-url = http://10.0.110.1:8080/cloudbase/CI/+simple/
+index-url = http://10.20.1.8:8080/cloudbase/CI/+simple/
 [install]
-trusted-host = 10.0.110.1
+trusted-host = 10.20.1.8
 "@
 
 $ErrorActionPreference = "SilentlyContinue"
@@ -105,7 +105,7 @@ if ($hasBinDir -eq $false){
 }
 
 if (($hasMkisoFs -eq $false) -or ($hasQemuImg -eq $false)){
-    Invoke-WebRequest -Uri "http://10.0.110.1/openstack_bin.zip" -OutFile "$bindir\openstack_bin.zip"
+    Invoke-WebRequest -Uri "http://10.20.1.14:8080/openstack_bin.zip" -OutFile "$bindir\openstack_bin.zip"
     [System.IO.Compression.ZipFile]::ExtractToDirectory("$bindir\openstack_bin.zip", "$bindir")
     Remove-Item -Force "$bindir\openstack_bin.zip"
 }
@@ -157,17 +157,12 @@ if ($hasLogDir -eq $false){
     mkdir $openstackLogs
 }
 
-$hasConfigDir = Test-Path $remoteConfigs\$hostname
-if ($hasConfigDir -eq $false){
-    mkdir $remoteConfigs\$hostname
-}
-
 pushd C:\
 if (Test-Path $pythonArchive)
 {
     Remove-Item -Force $pythonArchive
 }
-Invoke-WebRequest -Uri http://10.0.110.1/python.zip -OutFile $pythonArchive
+Invoke-WebRequest -Uri http://10.20.1.14:8080/python.zip -OutFile $pythonArchive
 
 if (Test-Path $pythonDir)
 {
@@ -187,12 +182,14 @@ else
 }
 Add-Content "$env:APPDATA\pip\pip.ini" $pip_conf_content
 
+$ErrorActionPreference = "Continue"
 & easy_install -U pip
 & pip install -U setuptools
 & pip install -U --pre PyMI
 & pip install cffi
 & pip install numpy
 & pip install pycrypto
+$ErrorActionPreference = "Stop"
 
 popd
 
@@ -292,11 +289,6 @@ ExecRetry {
         Get-ChildItem $buildDir\os-win
     }
     pushd $buildDir\os-win
-    
-    # Fixes VHD/x info retrieval issue by avoiding opening parents when fetching VHD info
-    git fetch git://git.openstack.org/openstack/os-win refs/changes/18/408718/2
-    cherry_pick FETCH_HEAD
-
     Write-Host "Installing openstack/os-win..."
     & update-requirements.exe --source $buildDir\requirements .
     if (@("stable/mitaka", "stable/newton", "master") -contains $branchName.ToLower()) {
@@ -339,86 +331,4 @@ if ($hasNeutronExec -eq $false){
     Throw "No neutron-hyperv-agent.exe found"
 }
 
-
-Remove-Item -Recurse -Force "$remoteConfigs\$hostname\*"
-Copy-Item -Recurse $configDir "$remoteConfigs\$hostname"
-
-Write-Host "Starting the services"
-
-$currDate = (Get-Date).ToString()
-Write-Host "$currDate Starting nova-compute service"
-Try
-{
-    Start-Service nova-compute
-}
-Catch
-{
-    Write-Host "Can not start the nova-compute service"
-}
-Start-Sleep -s 30
-if ($(get-service nova-compute).Status -eq "Stopped")
-{
-    Write-Host "nova-compute service is not running."
-    $currDate = (Get-Date).ToString()
-    Write-Host "$currDate We try to start:"
-    Write-Host Start-Process -PassThru -RedirectStandardError "$openstackLogs\process_error.txt" -RedirectStandardOutput "$openstackLogs\process_output.txt" -FilePath "$pythonScripts\nova-compute.exe" -ArgumentList "--config-file $configDir\nova.conf"
-    $currDate = (Get-Date).ToString()
-    Add-Content "$openstackLogs\nova-compute.log" "`n$currDate Starting nova-compute as a python process."
-    Try
-    {
-    	$proc = Start-Process -PassThru -RedirectStandardError "$openstackLogs\process_error.txt" -RedirectStandardOutput "$openstackLogs\process_output.txt" -FilePath "$pythonScripts\nova-compute.exe" -ArgumentList "--config-file $configDir\nova.conf"
-    }
-    Catch
-    {
-    	Throw "Could not start the process manually"
-    }
-    Start-Sleep -s 30
-    if (! $proc.HasExited)
-    {
-    	Stop-Process -Id $proc.Id -Force
-    	Throw "Process started fine when run manually."
-    }
-    else
-    {
-    	Throw "Can not start the nova-compute service. The manual run failed as well."
-    }
-}
-
-$currDate = (Get-Date).ToString()
-Write-Host "$currDate Starting neutron-hyperv-agent service"
-Try
-{
-    Start-Service neutron-hyperv-agent
-}
-Catch
-{
-    Write-Host "Can not start the neutron-hyperv-agent service"
-}
-Start-Sleep -s 30
-if ($(get-service neutron-hyperv-agent).Status -eq "Stopped")
-{
-    Write-Host "neutron-hyperv-agent service is not running."
-    $currDate = (Get-Date).ToString()
-    Write-Host "$currDate We try to start:"
-    Write-Host Start-Process -PassThru -RedirectStandardError "$openstackLogs\process_error.txt" -RedirectStandardOutput "$openstackLogs\process_output.txt" -FilePath "$pythonScripts\neutron-hyperv-agent.exe" -ArgumentList "--config-file $configDir\neutron_hyperv_agent.conf"
-    $currDate = (Get-Date).ToString()
-    Add-Content "$openstackLogs\neutron-hyperv-agent.log" "`n$currDate starting neutron-hyperv-agent as a python process."
-    Try
-    {
-    	$proc = Start-Process -PassThru -RedirectStandardError "$openstackLogs\process_error.txt" -RedirectStandardOutput "$openstackLogs\process_output.txt" -FilePath "$pythonScripts\neutron-hyperv-agent.exe" -ArgumentList "--config-file $configDir\neutron_hyperv_agent.conf"
-    }
-    Catch
-    {
-    	Throw "Could not start the process manually"
-    }
-    Start-Sleep -s 30
-    if (! $proc.HasExited)
-    {
-    	Stop-Process -Id $proc.Id -Force
-    	Throw "Process started fine when run manually."
-    }
-    else
-    {
-    	Throw "Can not start the neutron-hyperv-agent service. The manual run failed as well."
-    }
-}
+Write-Host "Done building env"
