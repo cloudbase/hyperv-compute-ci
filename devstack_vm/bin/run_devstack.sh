@@ -11,6 +11,7 @@ set -x
 set -e
 #sudo ifconfig eth0 promisc up
 sudo ifconfig eth1 promisc up
+sudo dhclient -v eth1
 
 HOSTNAME=$(hostname)
 
@@ -21,9 +22,10 @@ firewall_manage_ports "" add disable ${TCP_PORTS[@]}
 # Add pip cache for devstack
 mkdir -p $HOME/.pip
 echo "[global]" > $HOME/.pip/pip.conf
-echo "trusted-host = 10.20.1.8" >> $HOME/.pip/pip.conf
-echo "index-url = http://10.20.1.8:8080/cloudbase/CI/+simple/" >> $HOME/.pip/pip.conf
+echo "trusted-host = 10.0.110.1" >> $HOME/.pip/pip.conf
+echo "index-url = http://10.0.110.1:8080/cloudbase/CI/+simple/" >> $HOME/.pip/pip.conf
 echo "[install]" >> $HOME/.pip/pip.conf
+echo "trusted-host = 10.0.110.1" >> $HOME/.pip/pip.conf
 
 sudo mkdir -p /root/.pip
 sudo cp $HOME/.pip/pip.conf /root/.pip/
@@ -77,7 +79,7 @@ fi
 
 rotate_log $STACK_LOG $STACK_ROTATE_LIMIT
 
-sed -i "s#PIP_GET_PIP_URL=https://bootstrap.pypa.io/get-pip.py#PIP_GET_PIP_URL=http://10.21.7.214/get-pip.py#g" /home/ubuntu/devstack/tools/install_pip.sh
+sed -i "s#PIP_GET_PIP_URL=https://bootstrap.pypa.io/get-pip.py#PIP_GET_PIP_URL=http://10.0.110.1/get-pip.py#g" /home/ubuntu/devstack/tools/install_pip.sh
 
 #Requested by Claudiu Belu, temporary hack:
 sudo pip install -U /opt/stack/networking-hyperv

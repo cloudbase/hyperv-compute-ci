@@ -29,7 +29,7 @@ STACK_LOG="/opt/stack/logs/stack.sh.txt"
 STACK_ROTATE_LIMIT=5
 
 tests_dir="/opt/stack/tempest"
-parallel_tests=16
+parallel_tests=8
 max_attempts=3
 test_suite="default"
 log_file="/home/ubuntu/tempest/subunit-output.log"
@@ -38,6 +38,3 @@ tempest_output_file="/home/ubuntu/tempest/tempest-output.log"
 subunit_stats_file="/home/ubuntu/tempest/subunit_stats.log"
 TEMPEST_DIR="/home/ubuntu/tempest"
 TEMPEST_CONFIG="/opt/stack/tempest/etc/tempest.conf"
-
-TAR=$(which tar)
-GZIP=$(which gzip)
