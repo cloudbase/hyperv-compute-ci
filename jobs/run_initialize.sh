@@ -20,7 +20,7 @@
 source /home/jenkins-slave/tools/keystonerc_admin
 
 # Loading all the needed functions
-source /usr/local/src/hyperv-compute-ci/jobs/library.sh
+source /usr/local/src/hyperv-compute-ci-2016/jobs/library.sh
 
 set -e
 
@@ -29,101 +29,123 @@ if [[ ! -z $IS_DEBUG_JOB ]] && [[ $IS_DEBUG_JOB == "yes" ]]; then
         NAME="$NAME-dbg"
 fi
 export NAME=$NAME
+
+echo NAME=$NAME | tee -a /home/jenkins-slave/runs/devstack_params.$ZUUL_UUID.txt
+echo ZUUL_PROJECT=$ZUUL_PROJECT | tee -a /home/jenkins-slave/runs/devstack_params.$ZUUL_UUID.txt
 echo ZUUL_BRANCH=$ZUUL_BRANCH | tee -a /home/jenkins-slave/runs/devstack_params.$ZUUL_UUID.txt
-echo NAME=$NAME >> /home/jenkins-slave/runs/devstack_params.$ZUUL_UUID.txt
+echo ZUUL_CHANGE=$ZUUL_CHANGE | tee -a /home/jenkins-slave/runs/devstack_params.$ZUUL_UUID.txt
+echo ZUUL_PATCHSET=$ZUUL_PATCHSET | tee -a /home/jenkins-slave/runs/devstack_params.$ZUUL_UUID.txt
+echo ZUUL_UUID=$ZUUL_UUID | tee -a /home/jenkins-slave/runs/devstack_params.$ZUUL_UUID.txt
+echo IS_DEBUG_JOB=$IS_DEBUG_JOB | tee -a /home/jenkins-slave/runs/devstack_params.$ZUUL_UUID.txt
+
+ZUUL_SITE=`echo "$ZUUL_URL" |sed 's/.\{2\}$//'`
+echo ZUUL_SITE=$ZUUL_SITE | tee -a /home/jenkins-slave/runs/devstack_params.$ZUUL_UUID.txt
 
 NET_ID=$(nova net-list | grep private| awk '{print $2}')
-echo NET_ID=$NET_ID >> /home/jenkins-slave/runs/devstack_params.$ZUUL_UUID.txt
+echo NET_ID=$NET_ID | tee -a /home/jenkins-slave/runs/devstack_params.$ZUUL_UUID.txt
 
-echo NAME=$NAME
-echo NET_ID=$NET_ID
-
-devstack_image="devstack-78v1"
-
-echo "Image used is: $devstack_image"
+devstack_image="devstack-81v1"
+echo "devstack_image=$devstack_image" | tee -a /home/jenkins-slave/runs/devstack_params.$ZUUL_UUID.txt
 echo "Deploying devstack $NAME"
 
-# Boot the new 10G of RAM flavor
-VMID=$(nova boot --availability-zone hyper-v --flavor nova.devstack --image $devstack_image --key-name default --security-groups devstack --nic net-id="$NET_ID" "$NAME" --poll | awk '{if (NR == 21) {print $4}}')
-NOVABOOT_EXIT=$?
-export VMID=$VMID
-echo VMID=$VMID >>  /home/jenkins-slave/runs/devstack_params.$ZUUL_UUID.txt
-echo VMID=$VMID
+VM_OK=1
+while [ $VM_OK -ne 0 ]; do
+    VMID=$(nova boot --config-drive true --flavor devstack.xxl --image $devstack_image --key-name default --security-groups devstack --nic net-id="$NET_ID" --nic net-id="$NET_ID" "$NAME" --poll | awk '{if (NR == 21) {print $4}}')
+    NOVABOOT_EXIT=$?
+    export VMID=$VMID
 
-if [ $NOVABOOT_EXIT -ne 0 ]; then
-    echo "Failed to create devstack VM: $VMID"
+    if [ $NOVABOOT_EXIT -ne 0 ]; then
+        echo "Failed to create devstack VM: $VMID"
+        nova show "$VMID"
+        exit 1
+    fi
+
+    echo "Showing details of the new created instance: $VMID"
     nova show "$VMID"
-    exit 1
-fi
 
-echo "Showing details of the new created instance: $VMID"
-nova show "$VMID"
+    echo "Fetching devstack VM fixed IP address"
 
-echo "Fetching devstack VM fixed IP address"
+    FIP=$(nova show "$VMID" | grep "private network" | awk '{print $6}')
+    FIP=${FIP//,}
+    if [[ ! $FIP =~ .*\|.* ]]; then
+        sleep 30
+    fi
 
-FIP=$(nova show "$VMID" | grep "private network" | awk '{print $6}')
-FIP=${FIP//,}
-if [[ ! $FIP =~ .*\|.* ]]; then
-    sleep 30
-fi
+    sleep 10
+    FIXED_IP=$(nova show "$VMID" | grep "private network" | awk '{print $5}')
+    export FIXED_IP="${FIXED_IP//,}"
 
-sleep 10
-FLOATING_IP=$(nova floating-ip-create public | awk '{print $2}'|sed '/^$/d' | tail -n 1) || echo `date -u +%H:%M:%S` "Failed to alocate floating IP"
-if [ -z "$FLOATING_IP" ]; then
-   exit 1
-fi
-echo FLOATING_IP=$FLOATING_IP >> /home/jenkins-slave/runs/devstack_params.$ZUUL_UUID.txt
-
-echo FLOATING_IP=$FLOATING_IP
-exec_with_retry "nova add-floating-ip $VMID $FLOATING_IP" 15 5 || { echo "nova show $VMID:"; nova show "$VMID"; echo "nova console-log $VMID:"; nova console-log "$VMID"; exit 1; }
-
-sleep 10
-FIXED_IP=$(nova show "$VMID" | grep "private network" | awk '{print $5}')
-export FIXED_IP="${FIXED_IP//,}"
-
-COUNT=1
-while [ -z "$FIXED_IP" ]; do
-    if [ $COUNT -lt 10 ]; then
-        sleep 15
-        FIXED_IP=$(nova show "$VMID" | grep "private network" | awk '{print $5}')
-        export FIXED_IP="${FIXED_IP//,}"
-        COUNT=$(($COUNT + 1))
-    else
-        echo "Failed to get fixed IP using nova show $VMID"
-        echo "Trying to get the IP from console-log and port-list"
-        FIXED_IP1=`nova console-log $VMID | grep "ci-info" | grep "eth0" | grep "True" | awk '{print $7}'`
-        echo "From console-log we got IP: $FIXED_IP1"
-        FIXED_IP2=`neutron port-list -D -c device_id -c fixed_ips | grep $VMID | awk '{print $7}' | tr -d \" | tr -d }`
-        echo "From neutron port-list we got IP: $FIXED_IP2"
-        if [[ -z "$FIXED_IP1" || -z "$FIXED_IP2" ||  "$FIXED_IP1" != "$FIXED_IP2" ]]; then
-            echo "Failed to get fixed IP"
-            echo "nova show output:"
-            nova show "$VMID"
-            echo "nova console-log output:"
-            nova console-log "$VMID"
-            echo "neutron port-list output:"
-            neutron port-list -D -c device_id -c fixed_ips | grep $VMID
-            exit 1
+    COUNT=1
+    while [ -z "$FIXED_IP" ]; do
+        if [ $COUNT -lt 10 ]; then
+            sleep 15
+            FIXED_IP=$(nova show "$VMID" | grep "private network" | awk '{print $5}')
+            export FIXED_IP="${FIXED_IP//,}"
+            COUNT=$(($COUNT + 1))
         else
-            export FIXED_IP=$FIXED_IP1
+            echo "Failed to get fixed IP using nova show $VMID"
+            echo "Trying to get the IP from console-log and port-list"
+            FIXED_IP1=`nova console-log $VMID | grep "ci-info" | grep "eth0" | grep "True" | awk '{print $7}'`
+            echo "From console-log we got IP: $FIXED_IP1"
+            FIXED_IP2=`neutron port-list -D -c device_id -c fixed_ips | grep $VMID | awk '{print $7}' | tr -d \" | tr -d }`
+            echo "From neutron port-list we got IP: $FIXED_IP2"
+            if [[ -z "$FIXED_IP1" || -z "$FIXED_IP2" ||  "$FIXED_IP1" != "$FIXED_IP2" ]]; then
+                echo "Failed to get fixed IP"
+                echo "nova show output:"
+                nova show "$VMID"
+                echo "nova console-log output:"
+                nova console-log "$VMID"
+                echo "neutron port-list output:"
+                neutron port-list -D -c device_id -c fixed_ips | grep $VMID
+                exit 1
+            else
+                export FIXED_IP=$FIXED_IP1
+            fi
+        fi
+    done
+
+    echo "nova show $VMID:"
+    nova show "$VMID"
+
+    sleep 60
+
+    echo "Probing for connectivity on IP $FIXED_IP"
+    set +e
+    wait_for_listening_port $FIXED_IP 22 30
+    status=$?
+    set -e
+    if [ $status -eq 0 ]; then
+        VM_OK=0
+    echo "VM connectivity OK"
+    else
+    echo "VM connectivity NOT OK, rebooting VM"
+        nova reboot "$VMID"
+        sleep 120
+        set +e
+        wait_for_listening_port $FIXED_IP 22 30
+        status=$?
+        set -e
+        if [ $status -eq 0 ]; then
+            VM_OK=0
+            echo "VM connectivity OK"
+        else
+            echo "nova console-log $VMID:"; nova console-log "$VMID"; echo "Failed listening for ssh port on devstack"
+            echo "Deleting VM $VMID"
+            nova delete $VMID
         fi
     fi
 done
 
-echo FIXED_IP=$FIXED_IP >> /home/jenkins-slave/runs/devstack_params.$ZUUL_UUID.txt
-echo "FIXED_IP=$FIXED_IP"
-
-echo "nova show $VMID:"
-nova show "$VMID"
-
-sleep 60
-wait_for_listening_port $FLOATING_IP 22 30 || { echo "nova console-log $VMID:"; nova console-log "$VMID"; echo "Failed listening for ssh port on devstack";exit 1; }
+FLOATING_IP=$FIXED_IP
+echo FLOATING_IP=$FLOATING_IP | tee -a /home/jenkins-slave/runs/devstack_params.$ZUUL_UUID.txt
+echo FIXED_IP=$FIXED_IP | tee -a /home/jenkins-slave/runs/devstack_params.$ZUUL_UUID.txt
+echo VMID=$VMID | tee -a /home/jenkins-slave/runs/devstack_params.$ZUUL_UUID.txt
 
 echo "adding $NAME to /etc/hosts"
 run_ssh_cmd_with_retry ubuntu@$FLOATING_IP $DEVSTACK_SSH_KEY 'VMNAME=$(hostname); sudo sed -i "s/127.0.0.1 localhost/127.0.0.1 localhost $VMNAME/g" /etc/hosts' 1
 
 echo "adding apt-cacher-ng:"
-run_ssh_cmd_with_retry ubuntu@$FLOATING_IP $DEVSTACK_SSH_KEY 'echo "Acquire::http { Proxy \"http://10.0.110.1:3142\" };" | sudo tee --append /etc/apt/apt.conf.d/90-apt-proxy.conf' 1
+run_ssh_cmd_with_retry ubuntu@$FLOATING_IP $DEVSTACK_SSH_KEY 'echo "Acquire::http { Proxy \"http://10.20.1.32\" };" | sudo tee --append /etc/apt/apt.conf.d/90-apt-proxy.conf' 1
 
 echo "clean any apt files:"
 run_ssh_cmd_with_retry ubuntu@$FLOATING_IP $DEVSTACK_SSH_KEY "sudo rm -rf /var/lib/apt/lists/*" 1
@@ -139,13 +161,10 @@ run_ssh_cmd_with_retry ubuntu@$FLOATING_IP $DEVSTACK_SSH_KEY 'DEBIAN_FRONTEND=no
 run_ssh_cmd_with_retry ubuntu@$FLOATING_IP $DEVSTACK_SSH_KEY "sudo ln -fs /usr/share/zoneinfo/UTC /etc/localtime" 1
 
 # copy files to devstack
-scp -v -r -o "StrictHostKeyChecking no" -o "UserKnownHostsFile /dev/null" -i $DEVSTACK_SSH_KEY /usr/local/src/hyperv-compute-ci/devstack_vm/* ubuntu@$FLOATING_IP:/home/ubuntu/
-
-ZUUL_SITE=`echo "$ZUUL_URL" |sed 's/.\{2\}$//'`
-echo ZUUL_SITE=$ZUUL_SITE >> /home/jenkins-slave/runs/devstack_params.$ZUUL_UUID.txt
+scp -v -r -o "StrictHostKeyChecking no" -o "UserKnownHostsFile /dev/null" -i $DEVSTACK_SSH_KEY /usr/local/src/hyperv-compute-ci-2016/devstack_vm/* ubuntu@$FLOATING_IP:/home/ubuntu/
 
 set +e
-VLAN_RANGE=`/usr/local/src/hyperv-compute-ci/vlan_allocation.py -a $VMID`
+VLAN_RANGE=`/usr/local/src/hyperv-compute-ci-2016/vlan_allocation.py -a $VMID`
 if [ ! -z "$VLAN_RANGE" ]; then
   run_ssh_cmd_with_retry ubuntu@$FLOATING_IP $DEVSTACK_SSH_KEY "sed -i 's/TENANT_VLAN_RANGE.*/TENANT_VLAN_RANGE='$VLAN_RANGE'/g' /home/ubuntu/devstack/local.conf" 3
 fi
@@ -153,28 +172,16 @@ set -e
 
 run_ssh_cmd_with_retry ubuntu@$FLOATING_IP $DEVSTACK_SSH_KEY "sed -i 's/export OS_AUTH_URL.*/export OS_AUTH_URL=http:\/\/127.0.0.1:5000\/v2.0\//g' /home/ubuntu/keystonerc" 3
 
-# Add 1 more interface after successful SSH
-nova interface-attach --net-id "$NET_ID" "$VMID"
-
 # update repos
 run_ssh_cmd_with_retry ubuntu@$FLOATING_IP $DEVSTACK_SSH_KEY "/home/ubuntu/bin/update_devstack_repos.sh --branch $ZUUL_BRANCH --build-for $ZUUL_PROJECT" 1
-
-echo ZUUL_SITE=$ZUUL_SITE >> /home/jenkins-slave/runs/devstack_params.$ZUUL_UUID.txt
-
-# Set ZUUL IP in hosts file
-if  ! grep -qi zuul /etc/hosts ; then
-    run_ssh_cmd_with_retry ubuntu@$FLOATING_IP $DEVSTACK_SSH_KEY "echo '10.21.7.8 zuul.openstack.tld' | sudo tee -a /etc/hosts"
-    run_ssh_cmd_with_retry ubuntu@$FLOATING_IP $DEVSTACK_SSH_KEY "echo '10.9.1.27 zuul-ssd-0.openstack.tld' | sudo tee -a /etc/hosts"
-    run_ssh_cmd_with_retry ubuntu@$FLOATING_IP $DEVSTACK_SSH_KEY "echo '10.9.1.29 zuul-ssd-1.openstack.tld' | sudo tee -a /etc/hosts"
-fi
 
 # gerrit-git-prep
 run_ssh_cmd_with_retry ubuntu@$FLOATING_IP $DEVSTACK_SSH_KEY "/home/ubuntu/bin/gerrit_git_prep.sh --zuul-site $ZUUL_SITE --gerrit-site $ZUUL_SITE --zuul-ref $ZUUL_REF --zuul-change $ZUUL_CHANGE --zuul-project $ZUUL_PROJECT" 1
 
 # get locally the vhdx files used by tempest
 run_ssh_cmd_with_retry ubuntu@$FLOATING_IP $DEVSTACK_SSH_KEY "mkdir -p /home/ubuntu/devstack/files/images"
-run_ssh_cmd_with_retry ubuntu@$FLOATING_IP $DEVSTACK_SSH_KEY "wget http://10.0.110.1/cirros-0.3.4-x86_64.vhdx -O /home/ubuntu/devstack/files/images/cirros-0.3.4-x86_64.vhdx"
-run_ssh_cmd_with_retry ubuntu@$FLOATING_IP $DEVSTACK_SSH_KEY "wget http://10.0.110.1/Fedora-x86_64-20-20140618-sda.vhdx.gz -O /home/ubuntu/devstack/files/images/Fedora-x86_64-20-20140618-sda.vhdx.gz"
+run_ssh_cmd_with_retry ubuntu@$FLOATING_IP $DEVSTACK_SSH_KEY "wget http://10.20.1.14:8080/cirros-0.3.4-x86_64.vhdx -O /home/ubuntu/devstack/files/images/cirros-0.3.4-x86_64.vhdx"
+run_ssh_cmd_with_retry ubuntu@$FLOATING_IP $DEVSTACK_SSH_KEY "wget http://10.20.1.14:8080/Fedora-x86_64-20-20140618-sda.vhdx.gz -O /home/ubuntu/devstack/files/images/Fedora-x86_64-20-20140618-sda.vhdx.gz"
 
 # make local.sh executable
 run_ssh_cmd_with_retry ubuntu@$FLOATING_IP $DEVSTACK_SSH_KEY "chmod a+x /home/ubuntu/devstack/local.sh"
@@ -188,40 +195,33 @@ run_ssh_cmd_with_retry ubuntu@$FLOATING_IP $DEVSTACK_SSH_KEY "gzip --decompress 
 
 #Get IP addresses of the two Hyper-V hosts
 
-set +e
-IFS='' read -r -d '' PSCODE <<'_EOF'
-$NetIPAddr = Get-NetIPAddress | Where-Object {$_.InterfaceAlias -like "*br100*" -and $_.AddressFamily -like "IPv4"}
-$IPAddr = $NetIPAddr.IPAddress
-Write-Host $IPAddr
-_EOF
-HYPERV_GET_DATA_IP=`echo "$PSCODE" | iconv -f ascii -t utf16le | base64 -w0`
-hyperv01_ip=`run_wsman_cmd $hyperv01 $WIN_USER $WIN_PASS "powershell -ExecutionPolicy RemoteSigned -EncodedCommand $HYPERV_GET_DATA_IP" 2>&1 | grep -E -o '10\.0\.[0-9]{1,2}\.[0-9]{1,3}'`
-hyperv02_ip=`run_wsman_cmd $hyperv02 $WIN_USER $WIN_PASS "powershell -ExecutionPolicy RemoteSigned -EncodedCommand $HYPERV_GET_DATA_IP" 2>&1 | grep -E -o '10\.0\.[0-9]{1,2}\.[0-9]{1,3}'`
+hyperv01_ip=`run_wsman_cmd $hyperv01 $WIN_USER $WIN_PASS 'powershell -ExecutionPolicy RemoteSigned (Get-NetIPAddress -InterfaceAlias "*br100*" -AddressFamily "IPv4").IPAddress' 2>&1 | grep -E -o '10\.250\.[0-9]{1,2}\.[0-9]{1,3}'`
+hyperv02_ip=`run_wsman_cmd $hyperv02 $WIN_USER $WIN_PASS 'powershell -ExecutionPolicy RemoteSigned (Get-NetIPAddress -InterfaceAlias "*br100*" -AddressFamily "IPv4").IPAddress' 2>&1 | grep -E -o '10\.250\.[0-9]{1,2}\.[0-9]{1,3}'`
 set -e
 
 echo `date -u +%H:%M:%S` "Data IP of $hyperv01 is $hyperv01_ip"
 echo `date -u +%H:%M:%S` "Data IP of $hyperv02 is $hyperv02_ip"
-if [[ ! $hyperv01_ip =~ ^10\.0\.[0-9]{1,2}\.[0-9]{1,3} ]]; then
+if [[ ! $hyperv01_ip =~ ^10\.250\.[0-9]{1,2}\.[0-9]{1,3} ]]; then
     echo "Did not receive a good IP for Hyper-V host $hyperv01 : $hyperv01_ip"
     exit 1
 fi
-if [[ ! $hyperv02_ip =~ ^10\.0\.[0-9]{1,2}\.[0-9]{1,3} ]]; then
+if [[ ! $hyperv02_ip =~ ^10\.250\.[0-9]{1,2}\.[0-9]{1,3} ]]; then
     echo "Did not receive a good IP for Hyper-V host $hyperv02 : $hyperv02_ip"
     exit 1
 fi
 
 # Building devstack as a threaded job
 echo `date -u +%H:%M:%S` "Started to build devstack as a threaded job"
-nohup /usr/local/src/hyperv-compute-ci/jobs/build_devstack.sh $hyperv01_ip $hyperv02_ip > /home/jenkins-slave/logs/devstack-build-log-$ZUUL_UUID 2>&1 &
+nohup /usr/local/src/hyperv-compute-ci-2016/jobs/build_devstack.sh $hyperv01_ip $hyperv02_ip > /home/jenkins-slave/logs/devstack-build-log-$ZUUL_UUID.log 2>&1 &
 pid_devstack=$!
 
 # Building and joining HyperV nodes
 echo `date -u +%H:%M:%S` "Started building & joining Hyper-V node: $hyperv01"
-nohup /usr/local/src/hyperv-compute-ci/jobs/build_hyperv.sh $hyperv01 > /home/jenkins-slave/logs/hyperv-build-log-$ZUUL_UUID-$hyperv01 2>&1 &
+nohup /usr/local/src/hyperv-compute-ci-2016/jobs/build_hyperv.sh $hyperv01 > /home/jenkins-slave/logs/hyperv-build-log-$ZUUL_UUID-$hyperv01.log 2>&1 &
 pid_hv01=$!
 
 echo `date -u +%H:%M:%S` "Started building & joining Hyper-V node: $hyperv02"
-nohup /usr/local/src/hyperv-compute-ci/jobs/build_hyperv.sh $hyperv02 > /home/jenkins-slave/logs/hyperv-build-log-$ZUUL_UUID-$hyperv02 2>&1 &
+nohup /usr/local/src/hyperv-compute-ci-2016/jobs/build_hyperv.sh $hyperv02 > /home/jenkins-slave/logs/hyperv-build-log-$ZUUL_UUID-$hyperv02.log 2>&1 &
 pid_hv02=$!
 
 TIME_COUNT=0
@@ -283,3 +283,7 @@ run_ssh_cmd_with_retry ubuntu@$FLOATING_IP $DEVSTACK_SSH_KEY 'source /home/ubunt
 run_ssh_cmd_with_retry ubuntu@$FLOATING_IP $DEVSTACK_SSH_KEY 'source /home/ubuntu/keystonerc; NEUTRON_COUNT=$(neutron agent-list | grep -c "HyperV agent.*:-)"); if [ "$NEUTRON_COUNT" != 2 ];then neutron agent-list; exit 1;fi' 12
 run_ssh_cmd_with_retry ubuntu@$FLOATING_IP $DEVSTACK_SSH_KEY 'source /home/ubuntu/keystonerc; neutron agent-list' 1
 
+# Call create_cell after init phase is done
+if [ "$ZUUL_BRANCH" == "master" ]; then
+    run_ssh_cmd_with_retry ubuntu@$FLOATING_IP $DEVSTACK_SSH_KEY "url=\$(grep transport_url /etc/nova/nova-dhcpbridge.conf | awk '{print \$3}'); nova-manage cell_v2 simple_cell_setup --transport-url \$url >> /opt/stack/logs/screen/create_cell.log"
+fi
