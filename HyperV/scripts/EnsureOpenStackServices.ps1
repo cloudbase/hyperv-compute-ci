@@ -341,10 +341,9 @@ $ServiceChangeErrors.Add(22, "Status Invalid Service Account")
 $ServiceChangeErrors.Add(23, "Status Service Exists")
 $ServiceChangeErrors.Add(24, "Service Already Paused")
 
-$openstackDir = "C:\OpenStack"
-$virtualenv = "C:\Python27"
-$configDir = "$openstackDir\etc"
-$downloadLocation = "http://10.0.110.1/"
+$scriptLocation = [System.IO.Path]::GetDirectoryName($myInvocation.MyCommand.Definition)
+. "$scriptLocation\config.ps1"
+. "$scriptLocation\utils.ps1"
 
 $novaServiceName = "nova-compute"
 $novaServiceDescription = "OpenStack nova Compute Service"

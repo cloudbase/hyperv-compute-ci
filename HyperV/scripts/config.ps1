@@ -22,4 +22,6 @@ $openstackLogs="$openstackDir\Logs"
 $eventlogPath="$openstackLogs\Eventlog"
 $eventlogcsspath = "$templateDir\eventlog_css.txt"
 $eventlogjspath = "$templateDir\eventlog_js.txt"
-$downloadLocation = "http://10.0.110.1/"
+$downloadLocation = "http://10.20.1.14:8080/"
+$virtualenv = "C:\Python27"
+
