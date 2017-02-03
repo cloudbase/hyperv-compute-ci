@@ -11,6 +11,7 @@ set -x
 set -e
 #sudo ifconfig eth0 promisc up
 sudo ifconfig eth1 promisc up
+sudo ip -f inet r replace default via 10.250.0.1 dev eth0
 
 HOSTNAME=$(hostname)
 
@@ -30,7 +31,6 @@ sudo cp $HOME/.pip/pip.conf /root/.pip/
 sudo chown -R root:root /root/.pip
 
 # Update packages to latest version
-sudo easy_install -U pip
 sudo pip install -U six
 sudo pip install -U kombu
 sudo pip install -U pbr
@@ -76,8 +76,6 @@ else
 fi
 
 rotate_log $STACK_LOG $STACK_ROTATE_LIMIT
-
-sed -i "s#PIP_GET_PIP_URL=https://bootstrap.pypa.io/get-pip.py#PIP_GET_PIP_URL=http://10.20.1.14:8080/get-pip.py#g" /home/ubuntu/devstack/tools/install_pip.sh
 
 #Requested by Claudiu Belu, temporary hack:
 sudo pip install -U /opt/stack/networking-hyperv
