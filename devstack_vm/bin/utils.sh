@@ -244,3 +244,18 @@ rotate_log () {
 function timestamp(){
     echo `date -u +%H:%M:%S`
 }
+
+function cherry_pick() {
+    commit=$1
+    set +e
+    git cherry-pick $commit
+
+    if [ $? -ne 0 ]
+    then
+        echo "Ignoring failed git cherry-pick $commit"
+        git cherry-pick --abort
+    fi
+
+    set -e
+}
+
