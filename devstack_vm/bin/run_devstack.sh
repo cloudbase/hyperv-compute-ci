@@ -54,6 +54,20 @@ then
         sed -i 's/^HOST_IP=.*/HOST_IP='$MYIP'/g' "$LOCALRC"
 fi
 
+
+git config --global user.email hyper-v_ci@microsoft.com
+git config --global user.name 'Hyper-V CI'
+
+cd $tests_dir
+
+set +e
+
+# Apply patch "Force mke2fs to format even if entire device"
+git fetch git://git.openstack.org/openstack/tempest refs/changes/13/433213/3
+cherry_pick FETCH_HEAD
+
+set -e
+
 cd /home/ubuntu/devstack
 git pull
 
