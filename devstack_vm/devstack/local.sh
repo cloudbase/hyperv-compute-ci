@@ -10,7 +10,7 @@ if [ "$branch" == "stable/newton" ] || [ "$branch" == "stable/liberty" ] || [ "$
     nova flavor-delete 451
 fi
 
-nova flavor-create m1.nano 42 128 1 1
+nova flavor-create m1.nano 42 512 1 1
 nova flavor-create m1.micro 84 128 2 1
 nova flavor-create m1.heat 451 512 5 1
 
