@@ -109,6 +109,7 @@ function teardown_hyperv () {
 }
 
 function post_build_restart_hyperv_services (){
+    LOG_DIR='C:\Openstack\logs\'
     run_wsmancmd_with_retry $1 $2 $3 '"powershell -ExecutionPolicy RemoteSigned C:\OpenStack\hyperv-compute-ci\HyperV\scripts\post-build-restart-services.ps1 >> '$LOG_DIR'\create-environment.log 2>&1"'
 }
 
