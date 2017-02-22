@@ -139,7 +139,7 @@ if ($buildFor -eq "openstack/compute-hyperv") {
     ExecRetry {
         GitClonePull "$buildDir\requirements" "https://git.openstack.org/openstack/requirements.git" $branchName
     }
-    if (@("stable/newton", "stable/mitaka", "master") -contains $branchName.ToLower()) {
+    if (@("stable/mitaka", "stable/newton", "stable/ocata", "master") -contains $branchName.ToLower()) {
         ExecRetry {
             # os-win only exists on stable/mitaka and master.
             GitClonePull "$buildDir\os-win" "https://git.openstack.org/openstack/os-win.git" $branchName
@@ -284,7 +284,7 @@ ExecRetry {
 }
 
 ExecRetry {
-    if (@("stable/mitaka", "stable/newton", "master") -contains $branchName.ToLower()) {
+    if (@("stable/mitaka", "stable/newton", "stable/ocata", "master") -contains $branchName.ToLower()) {
         if ($isDebug -eq  'yes') {
             Write-Host "Content of $buildDir\os-win"
             Get-ChildItem $buildDir\os-win
@@ -304,7 +304,7 @@ $cores_count = $cpu_array.count * $cpu_array[0].NumberOfCores
 $novaConfig = (gc "$templateDir\nova.conf").replace('[DEVSTACK_IP]', "$devstackIP").Replace('[LOGDIR]', "$openstackLogs").Replace('[RABBITUSER]', $rabbitUser)
 $neutronConfig = (gc "$templateDir\neutron_hyperv_agent.conf").replace('[DEVSTACK_IP]', "$devstackIP").Replace('[LOGDIR]', "$openstackLogs").Replace('[RABBITUSER]', $rabbitUser).replace('[CORES_COUNT]', "$cores_count")
 
-if (@("stable/newton", "master") -contains $branchName.ToLower()) {
+if (@("stable/newton", "stable/ocata", "master") -contains $branchName.ToLower()) {
     $novaConfig = $novaConfig.replace('hyperv.nova.driver.HyperVDriver', 'compute_hyperv.driver.HyperVDriver')
 }
 
