@@ -284,19 +284,19 @@ ExecRetry {
 }
 
 ExecRetry {
-    if ($isDebug -eq  'yes') {
-        Write-Host "Content of $buildDir\os-win"
-        Get-ChildItem $buildDir\os-win
-    }
-    pushd $buildDir\os-win
-    Write-Host "Installing openstack/os-win..."
-    & update-requirements.exe --source $buildDir\requirements .
     if (@("stable/mitaka", "stable/newton", "master") -contains $branchName.ToLower()) {
+        if ($isDebug -eq  'yes') {
+            Write-Host "Content of $buildDir\os-win"
+            Get-ChildItem $buildDir\os-win
+        }
+        pushd $buildDir\os-win
+        Write-Host "Installing openstack/os-win..."
+        & update-requirements.exe --source $buildDir\requirements .
         # only install os-win on stable/mitaka, stable/newton, or master.
         & pip install .
+        if ($LastExitCode) { Throw "Failed to install os-win fom repo" }
+        popd
     }
-    if ($LastExitCode) { Throw "Failed to install os-win fom repo" }
-    popd
 }
 
 $cpu_array = ([array](gwmi -class Win32_Processor))
