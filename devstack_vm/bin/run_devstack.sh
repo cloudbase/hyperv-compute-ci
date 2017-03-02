@@ -63,11 +63,11 @@ cd $tests_dir
 set +e
 
 # Apply patch "wait for port status to be ACTIVE"
-git_timed fetch https://git.openstack.org/openstack/tempest refs/changes/49/383049/11
+git_timed fetch https://git.openstack.org/openstack/tempest refs/changes/49/383049/13
 cherry_pick FETCH_HEAD
 
 # Apply patch "Adds protocol options for test_cross_tenant_traffic"
-git_timed fetch https://git.openstack.org/openstack/tempest refs/changes/28/384528/8
+git_timed fetch https://git.openstack.org/openstack/tempest refs/changes/28/384528/9
 cherry_pick FETCH_HEAD
 
 # Apply patch "Force mke2fs to format even if entire device"
