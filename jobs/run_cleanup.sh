@@ -18,7 +18,7 @@ if [ "$IS_DEBUG_JOB" != "yes" ]
 
         echo "Removing devstack VM"
         nova delete "$VMID"
-        /usr/local/src/nova-ci/vlan_allocation.py -r $VMID
+        /usr/local/src/hyperv-compute-ci-2016/vlan_allocation.py -r $VMID
 
         rm -f /home/jenkins-slave/runs/devstack_params.$ZUUL_UUID.txt
 fi
