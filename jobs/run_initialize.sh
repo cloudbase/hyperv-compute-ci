@@ -15,12 +15,12 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 #
-
+basedir=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 # Loading OpenStack credentials
 source /home/jenkins-slave/tools/keystonerc_admin
 
 # Loading all the needed functions
-source /usr/local/src/hyperv-compute-ci-2016/jobs/library.sh
+source $basedir/library.sh
 
 set -e
 
@@ -161,10 +161,10 @@ run_ssh_cmd_with_retry ubuntu@$FLOATING_IP $DEVSTACK_SSH_KEY 'DEBIAN_FRONTEND=no
 run_ssh_cmd_with_retry ubuntu@$FLOATING_IP $DEVSTACK_SSH_KEY "sudo ln -fs /usr/share/zoneinfo/UTC /etc/localtime" 1
 
 # copy files to devstack
-scp -v -r -o "StrictHostKeyChecking no" -o "UserKnownHostsFile /dev/null" -i $DEVSTACK_SSH_KEY /usr/local/src/hyperv-compute-ci-2016/devstack_vm/* ubuntu@$FLOATING_IP:/home/ubuntu/
+scp -v -r -o "StrictHostKeyChecking no" -o "UserKnownHostsFile /dev/null" -i $DEVSTACK_SSH_KEY $basedir/../devstack_vm/* ubuntu@$FLOATING_IP:/home/ubuntu/
 
 set +e
-VLAN_RANGE=`/usr/local/src/hyperv-compute-ci-2016/vlan_allocation.py -a $VMID`
+VLAN_RANGE=`$basedir/../vlan_allocation.py -a $VMID`
 if [ ! -z "$VLAN_RANGE" ]; then
   run_ssh_cmd_with_retry ubuntu@$FLOATING_IP $DEVSTACK_SSH_KEY "sed -i 's/TENANT_VLAN_RANGE.*/TENANT_VLAN_RANGE='$VLAN_RANGE'/g' /home/ubuntu/devstack/local.conf" 3
 fi
@@ -212,16 +212,16 @@ fi
 
 # Building devstack as a threaded job
 echo `date -u +%H:%M:%S` "Started to build devstack as a threaded job"
-nohup /usr/local/src/hyperv-compute-ci-2016/jobs/build_devstack.sh $hyperv01_ip $hyperv02_ip > /home/jenkins-slave/logs/devstack-build-log-$ZUUL_UUID.log 2>&1 &
+nohup $basedir/build_devstack.sh $hyperv01_ip $hyperv02_ip > /home/jenkins-slave/logs/devstack-build-log-$ZUUL_UUID.log 2>&1 &
 pid_devstack=$!
 
 # Building and joining HyperV nodes
 echo `date -u +%H:%M:%S` "Started building & joining Hyper-V node: $hyperv01"
-nohup /usr/local/src/hyperv-compute-ci-2016/jobs/build_hyperv.sh $hyperv01 > /home/jenkins-slave/logs/hyperv-build-log-$ZUUL_UUID-$hyperv01.log 2>&1 &
+nohup $basedir/build_hyperv.sh $hyperv01 > /home/jenkins-slave/logs/hyperv-build-log-$ZUUL_UUID-$hyperv01.log 2>&1 &
 pid_hv01=$!
 
 echo `date -u +%H:%M:%S` "Started building & joining Hyper-V node: $hyperv02"
-nohup /usr/local/src/hyperv-compute-ci-2016/jobs/build_hyperv.sh $hyperv02 > /home/jenkins-slave/logs/hyperv-build-log-$ZUUL_UUID-$hyperv02.log 2>&1 &
+nohup $basedir/build_hyperv.sh $hyperv02 > /home/jenkins-slave/logs/hyperv-build-log-$ZUUL_UUID-$hyperv02.log 2>&1 &
 pid_hv02=$!
 
 TIME_COUNT=0
