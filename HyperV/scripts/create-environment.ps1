@@ -306,8 +306,11 @@ ExecRetry {
 
 # Temporary fix for os-win
 pip install setuptools==33.1.1
-pip install kombu==4.0.1
-pip install amqp==2.1.3
+
+if ($branchName -eq 'master') {
+    pip install kombu==4.0.1
+    pip install amqp==2.1.3
+}
 
 $cpu_array = ([array](gwmi -class Win32_Processor))
 $cores_count = $cpu_array.count * $cpu_array[0].NumberOfCores
