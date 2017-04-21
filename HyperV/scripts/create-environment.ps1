@@ -139,11 +139,8 @@ if ($buildFor -eq "openstack/compute-hyperv") {
     ExecRetry {
         GitClonePull "$buildDir\requirements" "https://git.openstack.org/openstack/requirements.git" $branchName
     }
-    if (@("stable/mitaka", "stable/newton", "stable/ocata", "master") -contains $branchName.ToLower()) {
-        ExecRetry {
-            # os-win only exists on stable/mitaka and master.
-            GitClonePull "$buildDir\os-win" "https://git.openstack.org/openstack/os-win.git" $branchName
-        }
+    ExecRetry {
+        GitClonePull "$buildDir\os-win" "https://git.openstack.org/openstack/os-win.git" $branchName
     }
     Get-ChildItem $buildDir
 }
