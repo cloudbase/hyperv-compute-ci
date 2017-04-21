@@ -286,19 +286,17 @@ ExecRetry {
 }
 
 ExecRetry {
-    if (@("stable/mitaka", "stable/newton", "stable/ocata", "master") -contains $branchName.ToLower()) {
-        if ($isDebug -eq  'yes') {
-            Write-Host "Content of $buildDir\os-win"
-            Get-ChildItem $buildDir\os-win
-        }
-        pushd $buildDir\os-win
-        Write-Host "Installing openstack/os-win..."
-        & update-requirements.exe --source $buildDir\requirements .
-        # only install os-win on stable/mitaka, stable/newton, or master.
-        & pip install .
-        if ($LastExitCode) { Throw "Failed to install os-win fom repo" }
-        popd
+    if ($isDebug -eq  'yes') {
+        Write-Host "Content of $buildDir\os-win"
+        Get-ChildItem $buildDir\os-win
     }
+    pushd $buildDir\os-win
+    Write-Host "Installing openstack/os-win..."
+    & update-requirements.exe --source $buildDir\requirements .
+    # only install os-win on stable/mitaka, stable/newton, or master.
+    & pip install .
+    if ($LastExitCode) { Throw "Failed to install os-win fom repo" }
+    popd
 }
 
 if ($branchName -eq 'master') {
