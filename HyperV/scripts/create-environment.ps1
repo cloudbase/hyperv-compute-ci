@@ -256,6 +256,7 @@ ExecRetry {
         Get-ChildItem $buildDir\nova
     }
     Write-Host "Installing openstack/nova..."
+    pushd $buildDir\nova
     & update-requirements.exe --source $buildDir\requirements .
     & pip install -c $buildDir\requirements\upper-constraints.txt -U .
     if ($LastExitCode) { Throw "Failed to install nova fom repo" }
