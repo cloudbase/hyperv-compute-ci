@@ -62,3 +62,6 @@ tempest.api.compute.test_live_block_migration_negative.LiveBlockMigrationNegativ
 
 # Removed heat code from devstack tree causes orchestration tests to fail https://github.com/openstack-dev/devstack/commit/77a7296248b2aae4ce878e33e05575748e7e4131
 tempest.api.orchestration
+
+# This test started failing when https://review.openstack.org/#/c/442162/ got merged
+tempest.api.compute.admin.test_services.ServicesAdminTestJSON.test_get_service_by_service_and_host_name
