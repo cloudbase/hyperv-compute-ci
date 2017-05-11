@@ -29,8 +29,13 @@ function archive_devstack_logs() {
         if [ -h "$DEVSTACK_LOGS/$i" ]
         then
                 REAL=$(readlink "$DEVSTACK_LOGS/$i")
-                $GZIP -c "$REAL" > "$LOG_DST_DEVSTACK/$i.gz" || emit_warning "L38: Failed to archive devstack logs"
+                if [ -f "$REAL" ]; then
+                    $GZIP -c "$REAL" > "$LOG_DST_DEVSTACK/$i.gz" || emit_warning "L38: Failed to archive devstack logs"
+                fi
         fi
+    done
+    for screen_log in `ls -A $DEVSTACK_LOG_DIR | grep screen-.*.txt`; do
+        $GZIP -c "$DEVSTACK_LOG_DIR/$screen_log" > "$LOG_DST_DEVSTACK/$screen_log.gz" || emit_warning "L41: Failed to archive devstack logs"
     done
     $GZIP -c /var/log/mysql/error.log > "$LOG_DST_DEVSTACK/mysql_error.log.gz"
     $GZIP -c /var/log/cloud-init.log > "$LOG_DST_DEVSTACK/cloud-init.log.gz"
@@ -118,6 +123,12 @@ function archive_tempest_files() {
 # Clean
 [ -d "$LOG_DST" ] && rm -rf "$LOG_DST"
 mkdir -p "$LOG_DST"
+
+# get openstack services logs
+for u in `sudo systemctl list-unit-files | grep devstack | awk '{print $1}'`; do
+    name=$(echo $u | sed 's/devstack@/screen-/' | sed 's/\.service//')
+    sudo journalctl -o short-precise --unit $u | sudo tee /opt/stack/logs/$name.txt > /dev/null
+done
 
 if [ "$IS_DEBUG_JOB" != "yes" ]; then 
     echo "Stop devstack services"
