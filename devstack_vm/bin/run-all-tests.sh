@@ -4,8 +4,6 @@ basedir=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 . $basedir/config.sh
 . $DEVSTACK_DIR/functions
 
-project_name=$(basename $project)
-
 mkdir -p $TEMPEST_DIR
 
 pushd $basedir
