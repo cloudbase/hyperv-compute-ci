@@ -259,6 +259,10 @@ ExecRetry {
     }
     Write-Host "Installing openstack/nova..."
     pushd $buildDir\nova
+    if ($branchName -eq 'master') {
+        git fetch git://git.openstack.org/openstack/nova refs/changes/25/479325/1
+        cherry_pick FETCH_HEAD
+     }
     & update-requirements.exe --source $buildDir\requirements .
     & pip install -c $buildDir\requirements\upper-constraints.txt -U .
     if ($LastExitCode) { Throw "Failed to install nova fom repo" }
